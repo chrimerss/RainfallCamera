@@ -1,0 +1,8 @@
+env/*
+low_res/*
+videos/*
+*.log
+*.csv
+*.ipynb
+*.png
+env/*
