@@ -26,19 +26,40 @@ class DataHandler(object):
 			self.folders= os.listdir(base_dir)
 
 
-	def process(self):
+	def process(self, num_videos=3):
+		'''
+		Args:
+		----------------
+		num_videos: the number of videos to process at one time to prevent memory overflo default sets=3
+
+		Return:
+		----------------
+		dask_arr: generator of dask array
+
+		'''
 		for folder in self.folders:
 			print(f'start processing {folder} ...')
 			videos= glob(os.path.join(self.base_dir, folder,'*.mkv'))
 			# print(videos)
-			yield self.dask_arr(videos)
-			
+			times= len(videos)//num_videos
+			if len(videos)%num_videos==0:
+				for i in range(times):
+					print(f"processing {videos[i*num_videos: (i+1)*num_videos]}")
+					yield self.dask_arr(videos[i*num_videos: (i+1)*num_videos])
+			else:
+				for i in range(times+1):
+					if i<=times:
+						print(f"processing {videos[i*num_videos: (i+1)*num_videos]}")
+						yield self.dask_arr(videos[i*num_videos: (i+1)*num_videos])
+					else:
+						print(f"processing {videos[(i+1)*num_videos:]}")
+						yield self.dask_arr(videos[(i+1)*num_videos:])
 
 	def _r_timestamp(self, video_path):
 		#used for returning timestamp for given video file
 		if not os.path.isfile(video_path):
 			raise FileNotFoundError(f'the video file {video_path} provided is not correct.')
-		file_name= video_path.split('/')[-1] 
+		file_name= video_path.split(os.sep)[-1] 
 		date= file_name.split('.')[0]
 		date_form= datetime.datetime.strptime(date.split('_')[0]+date.split('_')[1],'%Y%m%d%H%M%S')
 

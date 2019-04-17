@@ -64,6 +64,9 @@
 
 ## _Heavy Rainfall Processing_<a name='heavy'></a>
 
+    So far, we are limited by the data available to supervise a model towards the "correct" path
+    will add once more data can be aquired
+
 ## _Night Image Processing_<a name='night'></a>
 
 ## _Reference_<a name='reference'></a>
@@ -71,12 +74,14 @@
 ## _Miscellaneous_<a name='misc'></a>
 
 ### To-do list<a name='todo'></a>
-- [ ] build dask task manager
-- [ ] fix tensor implementation
+- [x] build dask task manager
 - [x] add classifier
 - [ ] add regression model/convert to RGB image
 - [ ] night image processing
+- [ ] GUI
 
 ### Updates<a name='update'></a>
     
+    2019.4.17 dask implementation
     2019.4.15 trained a classifier model
+    

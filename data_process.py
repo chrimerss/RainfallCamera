@@ -6,6 +6,7 @@ More info see README.md
 
 To-do List:
 ---------------
+[] animation
 [] add auto-cropping in method 'autocrop'
 [] GUI design
 [] retrain SVM inside classification folder with more images that no rain but before an event
@@ -17,6 +18,7 @@ Updates:
 '''
 from datahandler import DataHandler
 from joblib import load
+import dask
 import classification.classification as clf
 import PReNet.PCA
 import PReNet.DataPrep
@@ -41,6 +43,7 @@ if not sys.warnoptions:
 #-------------------------Argument for command----------------------------------
 parser= argparse.ArgumentParser('settings')
 parser.add_argument('--logging_file', default=True, help='whether use logging')
+parser.add_argument('--use_GPU', default=True, help='whether use GPU for RNN')
 OPT= parser.parse_args()
 #-------------------------------------------------------------------------------
 
@@ -48,9 +51,10 @@ OPT= parser.parse_args()
 __author__='lizhi'
 __version__=0.0
 if OPT.logging_file:
-	logging_file= datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.log'
+	logging_file= 'logs/'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.log'
 	logging.basicConfig(filename=logging_file, filemode= 'w', 
                     format= '%(asctime)s - %(message)s', datefmt='%d-%b-%y %H:%M:%S',level=logging.INFO)
+dask.config.set(scheduler='threads')
 #-------------------------------------------------------------------------------
 
 
@@ -92,7 +96,7 @@ class Rainfall(DataHandler):
 			intensity= da.map_blocks(self.distribution, array, chunks=(1,), drop_axis=[1,2,3,4],
 												 dtype=np.float32).compute(scheduler='threads')
 			end_rain= time.time()
-			print('processing rainfall costs ', round((end_rain-start_rain)/60), ' minutes')
+			print('processing rainfall costs ', round((end_rain-start_rain)/60.,2), ' minutes')
 			# timeseries[]
 			if first:
 				df= pd.DataFrame(columns=['Rainfall'])
@@ -103,9 +107,10 @@ class Rainfall(DataHandler):
 			df= pd.concat([df, _df])
 			if OPT.logging_file:
 				logging.info(_df)
-				logging.info(f'processing one event containing {array.shape[0]} images costs {round((end_rain-start_rain)/3600)}  hours')
+				logging.info(f'processing one event containing {array.shape[0]} images \
+				 				costs {round((end_rain-start_rain)/3600.,2)}  hours')
 		end=time.time()
-		print('total elapsed time :', round((end-start)/3600), ' hours!')	
+		print('total elapsed time :', round((end-start)/3600.), ' hours!')	
 		return df
 
 	def distribution(self, block, block_id=None):
@@ -113,7 +118,6 @@ class Rainfall(DataHandler):
 		#output: rainfall intensity
 		img= block.squeeze().copy()
 		label= self.labels[block_id[0]]
-		print(label)
 		if label== 'normal':
 			intensity= self.normal(img)
 		elif label=='night':
@@ -122,7 +126,7 @@ class Rainfall(DataHandler):
 			intensity= self.norain(img)
 		elif label=='heavy':
 			intensity= self.heavy(img)
-
+		print(intensity)
 		return np.array(intensity)[np.newaxis]
 
 	def classfier_model(self):
@@ -130,12 +134,13 @@ class Rainfall(DataHandler):
 
 		return svm
 
-	def rnn_model(self, model_path= './PReNet/logs/real/PReNet1.pth', recur_iter=4 ,use_GPU= False):
+	def rnn_model(self, model_path= './PReNet/logs/real/PReNet1.pth', recur_iter=4 ,use_GPU= OPT.use_GPU):
 		model= Generator_lstm(recur_iter, use_GPU)
 		if use_GPU:
 			model = model.cuda()
 		model.load_state_dict(torch.load(model_path, map_location='cpu'))
 		model.eval()
+
 		return model
 
 	def label(self, block):
@@ -144,9 +149,9 @@ class Rainfall(DataHandler):
 		
 		return np.array(label)[np.newaxis]
 
-	def normal(self, src):
+	def normal(self, src, use_GPU= OPT.use_GPU):
 		# rainfall calculation under normal condition
-		return RRCal().img_based_im(src, self.rnn)
+		return RRCal().img_based_im(src, self.rnn, use_GPU=use_GPU)
 
 	def heavy(self, src):
 		# heavy rainfall regression model adds here
@@ -172,8 +177,18 @@ class Rainfall(DataHandler):
 
 		return cv2.resize(img, (300,300))[np.newaxis, np.newaxis,:,:,:]
 
-	def auto_crop(self):
-		pass
+	def auto_crop(self, window_size=(300,300)):
+		h,w = src.shape
+		min_val= np.inf
+		# val= overdetection(src, 2)
+		# src[src<=val]=0
+		# src[src>val]=255
+		for i in range(h-window_size[0]):
+			for j in range(w-window_size[1]):
+				tot= src[i:window_size[0]+i, j:j+window_size[1]].sum()
+				if tot<min_val: min_val=tot; rows=slice(i, window_size[0]+i); cols=slice(j,j+window_size[1])
+
+		return rows, cols
 
 	def crop(self, block, crop_window=(slice(600,1000),slice(300,600))):
 		img= block.squeeze().copy()[crop_window[0], crop_window[1], :]
