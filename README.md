@@ -80,9 +80,11 @@
 - [ ] night image processing
 - [ ] GUI
 - [ ] add visualization
+- [ ] add computational time table
 
 ### Updates<a name='update'></a>
     
+    2019.4.18 optimized code and retrained model
     2019.4.17 dask implementation
     2019.4.15 trained a classifier model
-    
+  
