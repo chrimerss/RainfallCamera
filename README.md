@@ -79,6 +79,7 @@
 - [ ] add regression model/convert to RGB image
 - [ ] night image processing
 - [ ] GUI
+- [ ] add visualization
 
 ### Updates<a name='update'></a>
     

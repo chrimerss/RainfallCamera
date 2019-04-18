@@ -9,13 +9,13 @@ import datetime
 
 
 class GenerateData:
-	def __init__(self, num_imgs=100):
+	def __init__(self, num_imgs=150):
 		self.num_imgs= num_imgs
 
 	def _read_video(self, video, save_dir, random_nums):
 		cap= cv2.VideoCapture(video)
 		ind=0
-		video_name=video.split('\\')[-1].split('.')[0]
+		video_name=video.split(os.sep)[-1].split('.')[0]
 		date, time,_ = video_name.split('_')
 		start_date= datetime.datetime.strptime(date+time, "%Y%m%d%H%M%S")
 		num_imgs= len(glob(save_dir+'*.png'))
@@ -23,7 +23,7 @@ class GenerateData:
 		while True:
 			ret, frame= cap.read()
 			save_date= start_date+ datetime.timedelta(seconds=ind)
-			if not ret or num_imgs>=100:
+			if not ret or num_imgs>=150:
 				break
 			elif ind in random_nums:
 				print('save one image ...')
@@ -62,8 +62,23 @@ class GenerateData:
 			nums= np.random.randint(1,309,size=100)
 			self._read_video(video, save_dir=dir, random_nums=nums)
 
+	def additional(self, video, start, end, save_dir):
+		video_name=video.split(os.sep)[-1].split('.')[0]
+		date, time,_ = video_name.split('_')
+		start_date= datetime.datetime.strptime(date+time, "%Y%m%d%H%M%S")
+		cap= cv2.VideoCapture(video)
+		ind=0
+		while True:
+			ret, frame= cap.read()
+			save_date= start_date+ datetime.timedelta(seconds=ind)
+			if not ret:
+				break
+			elif end>=ind>=start:
+				if ind%15==0:
+					cv2.imwrite(os.path.join(save_dir,save_date.strftime("%Y%m%d%H%M%S")+'.png'), frame)
+			ind+=1
 
 if __name__=='__main__':
+	# video= 'D:\\CCTV\\RainfallCamera\\videos\\20181211\\20181211_144141_8FB5.mkv'
+	# GenerateData().additional(video,0,60, 'datasets/no_rain/')
 	GenerateData().normal()
-	GenerateData().heavy()
-	GenerateData().no_rain()
