@@ -71,6 +71,10 @@
 
 ## _Reference_<a name='reference'></a>
 
+R. Dongwei, Z. Wangmeng etc. (2019)_Progressive Image Deraining Networks: A Better and Simpler Baseline_
+R. Martin and M. Frank (2008.) _Classification of Weather Situations on Single Color Images_ 
+P. Allamano, A. Croci, and F. Laio1 (2015) _Toward the camera rain gauge_
+
 ## _Miscellaneous_<a name='misc'></a>
 
 ### To-do list<a name='todo'></a>
