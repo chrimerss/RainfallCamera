@@ -83,12 +83,13 @@ P. Allamano, A. Croci, and F. Laio1 (2015) _Toward the camera rain gauge_
 - [ ] add regression model/convert to RGB image
 - [ ] night image processing
 - [ ] GUI
-- [ ] add visualization
+- [x] add visualization
 - [ ] add computational time table
-- [ ] GPU version
+- [ ] GPU version(convert all dask array to torch array and hard code torch version SVM)
 
 ### Updates<a name='update'></a>
     
+    2019.4.19 add visualization.py
     2019.4.18 optimized code and retrained model
     2019.4.17 dask implementation
     2019.4.15 trained a classifier model
