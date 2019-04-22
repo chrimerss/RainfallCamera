@@ -26,7 +26,7 @@ class DataHandler(object):
 			self.folders= os.listdir(base_dir)
 
 
-	def process(self, num_videos=1):
+	def process(self, num_videos=2):
 		'''
 		Args:
 		----------------
@@ -73,7 +73,7 @@ class DataHandler(object):
 		ind=-1
 		while True:
 			ret, frame= video.read()
-			if not ret or ind >10:
+			if not ret:
 				break
 			self._img_assertion(frame)
 			frames.append(frame)

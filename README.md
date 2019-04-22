@@ -80,6 +80,8 @@ P. Allamano, A. Croci, and F. Laio1 (2015) _Toward the camera rain gauge_
 ### To-do list<a name='todo'></a>
 - [x] build dask task manager
 - [x] add classifier
+- [x] Flask server
+- [ ] Host on cloud
 - [ ] add regression model/convert to RGB image
 - [ ] night image processing
 - [ ] GUI
@@ -89,6 +91,7 @@ P. Allamano, A. Croci, and F. Laio1 (2015) _Toward the camera rain gauge_
 
 ### Updates<a name='update'></a>
     
+    2019.4.22 Flask local server to classify image 
     2019.4.19 add visualization.py
     2019.4.18 optimized code and retrained model
     2019.4.17 dask implementation

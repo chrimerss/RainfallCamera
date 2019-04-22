@@ -47,8 +47,8 @@ if not sys.warnoptions:
 
 #-------------------------Argument for command----------------------------------
 parser= argparse.ArgumentParser('settings')
-parser.add_argument('--logging_file', default=False, help='whether use logging')
-parser.add_argument('--use_GPU', default=False, help='whether use GPU for RNN')
+parser.add_argument('--logging_file', default=True, help='whether use logging')
+parser.add_argument('--use_GPU', default=True, help='whether use GPU for RNN')
 OPT= parser.parse_args()
 #-------------------------------------------------------------------------------
 
@@ -91,6 +91,7 @@ class Rainfall(DataHandler):
 		self.RNN_model= RNN_model
 		self.size=(200,200)
 		self.window_size=(10,10)
+		logging.info(f'      Environment Setting:\nclassifier model: {class_model}\nRNN model: {RNN_model}\nresized image: {self.size}')
 
 
 	def controller(self):
