@@ -62,11 +62,13 @@ def update(args):
     ax[1].plot(_df.index, _df.rain, color='red')
     ax[1].set_ylim([df_date.rain.min(), df_date.rain.max()])
     ax[1].set_xlim([df_date.index[0], df_date.index[-1]])
+    ax[0].set_xlabel('datetime')
+    ax[1].set_ylabel('rainfall intensity (mm/hour')
     
 
-fig, ax= plt.subplots(2,1,figsize=(15,10),gridspec_kw = {'height_ratios':[3, 1]})
+fig, ax= plt.subplots(2,1,figsize=(6,4),gridspec_kw = {'height_ratios':[3, 1]})
 ani = animation.FuncAnimation(fig,update,frame,save_count=len(df_date), interval=0)
 # ani2 = animation.FuncAnimation(fig,update_ts,ts,interval=50)
 
-ani.save(f'{date}.gif', writer='imagemagick', fps=30)
+ani.save(f'{date}.gif', writer='imagemagick', fps=30,bitrate=500)
 # plt.show()

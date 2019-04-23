@@ -8,7 +8,7 @@ note: Put all videos want to process in one folder Let's say videos/
 
 To-do List:
 ---------------
-[ ] animation
+[x] animation
 [x] add auto-cropping in method 'autocrop'
 [ ] GUI design
 [x] retrain SVM inside classification folder with more images that no rain but before an event and heavy events like in 20180401
@@ -17,6 +17,7 @@ To-do List:
 
 Updates:
 ----------------
+2019.04.22: add visualisation
 2019.04.17: events calculation with dask to return rainfall intensity, stored all images in one event.
 2019.04.17: add logging to the current folder
 '''

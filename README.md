@@ -52,7 +52,7 @@
 Follow the pipeline, we emphisize on how to extract the rainfall intensity. In this method we describe, we feed the classified rainy image denoted as R into 4 times pretrained recurrent neuron network to get the original de-rained image O. By simple substracting and binary thresholding, we are able to get rainfall streaks S for analysis. But according to experiment, some images still quite messy under the condition that the moving trees and some hight pixel values give a false signal. In order to safeguard the following calculation process, we need to provide more accurate rainfall streaks. By achieving this, we decompose S with PCA and analyse the morphology of rain streaks etc. the shape of rain streak, the width of the rain streak, the orientation of the rain streak. With provided constraints, the output purified image will eventually put into Allamano algorithm.
 
    <figure>
-   <img src="images/normal_pipeline.PNG" style="float: center"><br>
+   <img src="images/normal_pipeline.PNG" style="float: center" width="50%"><br>
    <caption style="font-size:1em;"><center>Fig.2 Pipeline of processing noormal rainy image</center></caption>
    </figure>
 

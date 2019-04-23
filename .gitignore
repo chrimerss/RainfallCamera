@@ -7,3 +7,4 @@ videos/*
 *.png
 env/*
 *.gif
+GPU_version/*

@@ -45,12 +45,13 @@ def predict():
 			model= load('../classification/svm_model-4-grid_searched-200x200.joblib')
 			label=model.predict(info)[0]
 			if label=='normal':
-				# intensity= cal_intensity(img)
-				intensity='unknown'
+				intensity= cal_intensity(img[600:1000,300:600,:])
+				intensity= round(intensity,2)
+				# intensity='unknown'
 			elif label=='night':
-				intensity='night image'
+				intensity='unknown'
 			elif label=='heavy':
-				intensity= 'heavy'
+				intensity= 'unknown'
 			elif label=='no rain':
 				intensity=0
 
