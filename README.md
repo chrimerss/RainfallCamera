@@ -15,8 +15,9 @@
 ### 5. [Night Image Processing](#night)
 ### 6. [Reference](#reference)
 ### 7. [Misc](#misc)
-#### 7.1 [To-do List](#todo)
-#### 7.2 [Updates](#update)
+#### 7.1 [Demo](#demo)
+#### 7.2 [To-do List](#todo)
+#### 7.3 [Updates](#update)
 
 
 
@@ -47,20 +48,31 @@
 
 
 ## _Normal Rainfall Processing_<a name='normal'></a>
+
+Follow the pipeline, we emphisize on how to extract the rainfall intensity. In this method we describe, we feed the classified rainy image denoted as R into 4 times pretrained recurrent neuron network to get the original de-rained image O. By simple substracting and binary thresholding, we are able to get rainfall streaks S for analysis. But according to experiment, some images still quite messy under the condition that the moving trees and some hight pixel values give a false signal. In order to safeguard the following calculation process, we need to provide more accurate rainfall streaks. By achieving this, we decompose S with PCA and analyse the morphology of rain streaks etc. the shape of rain streak, the width of the rain streak, the orientation of the rain streak. With provided constraints, the output purified image will eventually put into Allamano algorithm.
+
+   <figure>
+   <img src="images/normal_pipeline.PNG" style="float: center"><br>
+   <caption style="font-size:1em;"><center>Fig.2 Pipeline of processing noormal rainy image</center></caption>
+   </figure>
+
    **1. RNN**<hr style="height:10px; visibility:hidden">
    <figure>
    <img src="images/RNN.PNG" style="float: center"><br>
-   <caption style="font-size:1em;"><center>**Fig.2 Overview of RNN model** (Progressive Image Deraining Networks: A Better and Simpler Baseline)</center></caption>
+   <caption style="font-size:1em;"><center>Fig.3 Overview of RNN model (Progressive Image Deraining Networks: A Better and Simpler Baseline)</center></caption>
    </figure>
    <br>
    **2. Allamano Algorithm**<hr style="height:10px; visibility:hidden">
    <figure>
    <img src="https://raw.githubusercontent.com/chrimerss/RainProperty/master/Rainstreak.png" style="float: center"><br>
-   <caption style="font-size:1em;"><center>**Fig.3 Example of delineated rain streaks** </center></caption>
+   <caption style="font-size:1em;"><center>Fig.4 Example of delineated rain streaks </center></caption>
    </figure>
    <br>
    
    > Allamano Algorithm is used for evaluating the rainfall intensity, the philosophi behind is control volume approach to count rain drops inside the defined bounding box, and calculate rainfall terminal velocity etc.
+   > 
+   
+   an event on 2018.12.08 demonstrates the accuracy of this series of images.
 
 ## _Heavy Rainfall Processing_<a name='heavy'></a>
 
@@ -76,6 +88,21 @@ R. Martin and M. Frank (2008.) _Classification of Weather Situations on Single C
 P. Allamano, A. Croci, and F. Laio1 (2015) _Toward the camera rain gauge_  
 
 ## _Miscellaneous_<a name='misc'></a>
+
+### Demo<a name='demo'></a>
+
+In the api folder, there is a simple demo classifying an image and extract the rainfall intensity with built [Flask](http://flask.pocoo.org/) backend
+
+'''python
+python api.py
+'''
+a local server should be set up at port 8000, in your browser, enter in localhost:8000, then the interface will pop up as 
+
+   <figure>
+   <img src="images/capture_of_localhost.PNG" style="float: center"><br>
+   <caption style="font-size:1em;"><center>Fig.5 Snapshot of the local server </center></caption>
+   </figure>
+   <br>
 
 ### To-do list<a name='todo'></a>
 - [x] build dask task manager
