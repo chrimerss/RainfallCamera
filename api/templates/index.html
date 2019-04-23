@@ -1,0 +1,24 @@
+<html> 
+
+<head>
+<title>Rainfall Classification Model</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+
+    <h1>Rainfall Classification</h1>
+
+    <form action="/predict" method="post" enctype="multipart/form-data">
+      <input type="file" name="image" value="Upload"><input type="submit" value="Predict"> 
+    </form>
+    <div></div>
+    {% if label %}
+    <h2>Result:  {{ label }}</h2>
+    <h3>Estimated rainfall intensity: {{ value }} mm/hour</h3>
+    <img src="{{ user_image }}" alt="uploaded image" width="50%" />
+    {% endif %}
+</body>
+
+</html>
