@@ -8,3 +8,5 @@ videos/*
 env/*
 *.gif
 GPU_version/*
+visualisation/*
+svm_model.joblib
