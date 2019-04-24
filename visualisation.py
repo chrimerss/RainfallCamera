@@ -8,6 +8,7 @@ import numpy as np
 import datetime
 import cv2
 import argparse
+import matplotlib.dates as mdates
 
 parser= argparse.ArgumentParser('settings')
 parser.add_argument('--date',type=str,default='20180401', help='specify the date want to produce .gif')
@@ -45,15 +46,15 @@ def frame():
     while True:
         video_ind+=1
         print(video_ind,'/',tot_videos)
-        video= videos_path[video_ind]
-        if video_ind> tot_videos:
+        if video_ind>= tot_videos:
             break
+        video= videos_path[video_ind]
         for frame in read_video(video):
             print(ind,'/', len(df_date))
             ind+=1
             yield cv2.resize(frame,(480,270)), df_date.iloc[:ind+1]
 
-            
+
 def update(args):
     img= args[0]
     _df= args[1]
@@ -61,14 +62,17 @@ def update(args):
     ax[0].imshow(img)
     ax[1].plot(_df.index, _df.rain, color='red')
     ax[1].set_ylim([df_date.rain.min(), df_date.rain.max()])
+    # ax[1].set_ylim([_df.rain.min(), _df.rain.max()])
     ax[1].set_xlim([df_date.index[0], df_date.index[-1]])
-    ax[0].set_xlabel('datetime')
+    # ax[1].set_xlim([df_date.index[0], df_date.index[310]])
+    ax[1].set_xlabel('datetime')
     ax[1].set_ylabel('rainfall intensity (mm/hour')
+    ax[1].xaxis.set_major_formatter(myFmt)
     
-
-fig, ax= plt.subplots(2,1,figsize=(6,4),gridspec_kw = {'height_ratios':[3, 1]})
+myFmt = mdates.DateFormatter('%H:%M:%S')
+fig, ax= plt.subplots(2,1,figsize=(8,6),gridspec_kw = {'height_ratios':[3, 1]})
 ani = animation.FuncAnimation(fig,update,frame,save_count=len(df_date), interval=0)
 # ani2 = animation.FuncAnimation(fig,update_ts,ts,interval=50)
 
-ani.save(f'{date}.gif', writer='imagemagick', fps=30,bitrate=500)
+ani.save(f'{date}-demo.gif', writer='imagemagick', fps=30,bitrate=50)
 # plt.show()
