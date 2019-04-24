@@ -105,19 +105,8 @@ P. Allamano, A. Croci, and F. Laio1 (2015) _Toward the camera rain gauge_
 
 In the api folder, there is a simple demo classifying an image and extract the rainfall intensity with built [Flask](http://flask.pocoo.org/) backend
 
-
-'''python
-python api.py
-'''
-a local server should be set up at port 8000, in your browser, enter in localhost:8000, then the interface will pop up as 
-
-   <figure>
-   <img src="images/capture_of_localhost.PNG" style="float: center"><br>
-   <caption style="font-size:1em;"><center>Fig.6 Snapshot of the local server </center></caption>
-   </figure>
-=======
-```python
-python api.py
+```python  
+python api.py  
 ```
 
 a local server should be set up at port 8000, in your browser, enter in localhost:8000, then the interface will pop up as 
