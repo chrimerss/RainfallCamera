@@ -52,21 +52,12 @@
 Follow the pipeline, we emphisize on how to extract the rainfall intensity. In this method we describe, we feed the classified rainy image denoted as R into 4 times pretrained recurrent neuron network to get the original de-rained image O. By simple substracting and binary thresholding, we are able to get rainfall streaks S for analysis. But according to experiment, some images still quite messy under the condition that the moving trees and some hight pixel values give a false signal. In order to safeguard the following calculation process, we need to provide more accurate rainfall streaks. By achieving this, we decompose S with PCA and analyse the morphology of rain streaks etc. the shape of rain streak, the width of the rain streak, the orientation of the rain streak. With provided constraints, the output purified image will eventually put into Allamano algorithm.
 
 
-   <figure>
-   <img src="images/normal_pipeline.png" style="float: center" width="50%"><br>
-   <caption style="font-size:1em;"><center>Fig.2 Pipeline of processing noormal rainy image</center></caption>
-   </figure>
-
-   **1. RNN**<hr style="height:10px; visibility:hidden">
-   <figure>
-   <img src="images/RNN.PNG" style="float: center"><br>
-   <caption style="font-size:1em;"><center>Fig.3 Overview of RNN model (Progressive Image Deraining Networks: A Better and Simpler Baseline)</center></caption>
-   </figure>
-=======
 <p align="center">
   <img height="50%" src="images/normal_pipeline.png"><br>
     Fig.2 Pipeline of normal rainfall process
 </p>
+
+
 
    **1. RNN**<hr style="height:10px; visibility:hidden">
    
@@ -78,12 +69,6 @@ Follow the pipeline, we emphisize on how to extract the rainfall intensity. In t
    
    **2. Allamano Algorithm**<hr style="height:10px; visibility:hidden">
 
-   <figure>
-   <img src="https://raw.githubusercontent.com/chrimerss/RainProperty/master/Rainstreak.png" style="float: center"><br>
-   <caption style="font-size:1em;"><center>Fig.4 Example of delineated rain streaks </center></caption>
-   </figure>
-=======
-   
    <p align="center">
    <img src="https://raw.githubusercontent.com/chrimerss/RainProperty/master/Rainstreak.png" align="center"><br>
    Fig.4 Example of delineated rain streaks
@@ -97,7 +82,7 @@ Follow the pipeline, we emphisize on how to extract the rainfall intensity. In t
    an event on 2018.12.08 demonstrates the accuracy of this series of images.
 
    <p align="center">
-    <img src="images/20181212-demo.gif"><br>
+    <img src="images/20181212-demo.gif" ><br>
     Fig.5 Event 2018.12.12 at H2i, Singapore
    </p>
 
