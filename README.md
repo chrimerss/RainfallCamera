@@ -97,6 +97,11 @@ Follow the pipeline, we emphisize on how to extract the rainfall intensity. In t
    
    an event on 2018.12.08 demonstrates the accuracy of this series of images.
 
+   <p align="center">
+    <img src="imgs/20181212-demo.gif"><br>
+    Fig.5 Event 2018.12.12 at H2i, Singapore
+   </p>
+
 ## _Heavy Rainfall Processing_<a name='heavy'></a>
 
     So far, we are limited by the data available to supervise a model towards the "correct" path
