@@ -93,6 +93,8 @@ Follow the pipeline, we emphisize on how to extract the rainfall intensity. In t
 
 ## _Night Image Processing_<a name='night'></a>
 
+Some modern techniques goes here. 
+
 ## _Reference_<a name='reference'></a>
 
 R. Dongwei, Z. Wangmeng etc. (2019) _Progressive Image Deraining Networks: A Better and Simpler Baseline_  

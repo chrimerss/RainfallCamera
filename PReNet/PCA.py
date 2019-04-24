@@ -60,10 +60,10 @@ class RainDetection_PCA():
 			Y.append(Y_series.mean())
 		return np.array(X), np.array(Y)
 
-	def _covariance(self, labels, X, Y):
+	def _covariance(self, labels, X, Y, c):
     	#labels= connected components
     	#X,Y= _location_vector()
-		comatrices= []
+		L,W,THETA= [],[],[]
 		for i,label in enumerate(np.unique(labels)):
 			X_series,Y_series= np.where(labels==label)
 			mat= np.zeros((2,2))
@@ -71,24 +71,16 @@ class RainDetection_PCA():
 				mat= np.dot(np.array([[x],[y]]),np.array([[x,y]]))+mat
 			mat/=len(X_series)
 			comat= mat-np.dot(np.array([[X[i]],[Y[i]]]),np.array([[X[i], Y[i]]]))
-			comatrices.append(comat)
-		return comatrices
-
-	def _eigtn_char(self, covariances, c):
-    	# calculates the eigen value and eigen vector of the covariance matrix and return the morphology of rain streaks
-    	# c: propotionality to compute length and width
-		L=[]
-		W=[]
-		THETA=[]
-		for mat in covariances:
-			w,v= np.linalg.eig(mat)
+			w,v= np.linalg.eig(comat)
 			theta= np.arctan(v[0][1]/v[0][0])
 			l= max(c*w)
 			w= min(c*w)
 			L.append(l)
 			W.append(w)
 			THETA.append(theta)
-		return np.array(L), np.array(W), np.array(THETA)	
+
+		return np.array(L), np.array(W), np.array(THETA)
+
 
 	def _refinement(self, L, W, theta, max_width=1, l_w_ratio=10, abs_angle=45):
     	# final refinement of rain streaks
@@ -155,8 +147,7 @@ class RainDetection_PCA():
 		if connection_show==True:
 			self.imshow_components(labels)
 		X,Y= self._location_vector(ret,labels)
-		covariances= self._covariance(labels, X, Y)
-		L, W, THETA= self._eigtn_char(covariances, 0.5)
+		L, W, THETA= self._covariance(labels, X, Y, 0.5)
 		indexs= self._refinement(L, W, THETA, max_width=0.5, l_w_ratio=10, abs_angle=30)
 		orig_X, orig_Y= self._relocate(indexs, labels)
 		img_new= np.zeros((img.shape), dtype=np.uint8)
@@ -172,8 +163,7 @@ class RainDetection_PCA():
 		# single frame derain, for RNN
 		ret, labels= self._connected_components(frame)
 		X,Y= self._location_vector(ret,labels)
-		covariances= self._covariance(labels, X, Y)
-		L, W, THETA= self._eigtn_char(covariances, 0.5)
+		L, W, THETA= self._covariance(labels, X, Y, 0.5)
 		indexs= self._refinement(L, W, THETA, max_width=0.5, l_w_ratio=10, abs_angle=30)
 		orig_X, orig_Y= self._relocate(indexs, labels)
 		img_new= np.zeros((frame.shape), dtype=np.uint8)
@@ -200,7 +190,14 @@ class RainDetection_PCA():
 
 if __name__ =='__main__':
 	# work_dir= './Rainy'
-	work_dir= os.getcwd()
-	RD= RainDetection_PCA(work_dir)
+	img_path= 'D:\\Radar Projects\\lizhi\\CCTV\\Test_imgs\\20180324-0307\\Rain-6.png'
+	img=cv2.imread(img_path)
+	img= cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+	print(img)
+	# work_dir= os.getcwd()
+	RD= RainDetection_PCA(img_path)
 	# RD.execute('Heavy-rain.png',connection_show=False, save_img=True, show_img=False)
-	RD.gray_img_derain('0.png', connection_show=False, show_img=True)
+	img_new= RD.gray_frame_derain(img)
+	cv2.imshow('output', img_new)
+	cv2.waitKey(0)
+	cv2.destroyAllWindows()
