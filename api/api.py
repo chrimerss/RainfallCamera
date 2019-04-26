@@ -10,9 +10,9 @@ from joblib import load
 import cv2
 import os
 import scipy.misc
-from PReNet.generator import Generator_lstm
 import torch
-from PReNet.Execute_RR_cpu import RRCal
+from PReNet.generator import Generator_lstm
+from PReNet.execute_cpu import RRCal
 # config:
 UPLOAD_FOLDER= os.path.join('static','uploaded')
 ALLOWED_EXTENSIONS= set(['png','jpg','jpeg'])

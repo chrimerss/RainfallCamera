@@ -25,10 +25,10 @@ from datahandler import DataHandler
 from joblib import load
 import dask
 import classification.classification as clf
-import PReNet.PCA
-import PReNet.DataPrep
-import PReNet.RainProperty
-from PReNet.Execute_RR_cpu import RRCal
+import PReNet.pca
+import PReNet.dataprep
+import PReNet.rainproperty
+from PReNet.execute_cpu import RRCal
 from PReNet.generator import Generator_lstm
 from dask.distributed import Client, LocalCluster
 import numpy as np

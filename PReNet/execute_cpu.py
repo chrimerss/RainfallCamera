@@ -7,18 +7,18 @@ The pipeline goes as follow:
 	4. assess this method with radar and gauge data.
 '''
 import cv2
-from .DataPrep import video2image
+from dataprep import video2image
 import datetime
-from .RainProperty import RainProperty
-from .PCA import RainDetection_PCA
+from rainproperty import RainProperty
+from pca import RainDetection_PCA
 import os
 import argparse
 import numpy as np
 import pandas as pd
 import torch
 from torch.autograd import Variable
-from .utils import *
-from .generator import Generator_lstm
+from utils import *
+from generator import Generator_lstm
 import time
 import sys
 import logging
@@ -32,7 +32,7 @@ parser.add_argument("--logdir", type=str, default="logs/real/", help='path to mo
 parser.add_argument("--data_path", type=str, default="datasets/test", help='path to training data')
 parser.add_argument("--folder", type=str, default="20180401", help='folder to run')
 parser.add_argument("--save_path", type=str, default="results/", help='path to save results')
-parser.add_argument("--use_GPU", type=bool, default=False, help='use GPU or not')
+parser.add_argument("--use_GPU", type=bool, default=True, help='use GPU or not')
 parser.add_argument("--gpu_id", type=str, default="0", help='GPU id')
 parser.add_argument("--which_model", type=str, default="PReNet1.pth", help='model name')
 parser.add_argument("--recurrent_iter", type=int, default=4, help='number of recursive stages')
@@ -68,7 +68,7 @@ class RRCal(object):
 
 		return videos
 
-	def pretrained_model(self, model_path="PReNet1.pth"):
+	def pretrained_model(self, model_path="latest.pth"):
 		'''
 		Args:
 		------------------
@@ -132,8 +132,8 @@ class RRCal(object):
 		-------------------
 		rainrate: int More info related to RainProperty
 		'''
-		rainrate= RainProperty(mat=img)
-		return rainrate.RainRate()
+		rainrate= RainProperty(mat=img, graph=True)
+		return rainrate.rainrate()
 
 	@staticmethod
 	def rainstreak(rainy, derain, threshold):
@@ -319,4 +319,9 @@ if __name__=='__main__':
 	# df.to_excel(opt.save_path+opt.folder+'.xlsx')
 	rate_cal= RRCal('D:\\CCTV\\RainfallCamera\\videos')
 	# rate= rate_cal._tensor_test('D:\\Radar Projects\\lizhi\\CCTV\\Rain Detection\\CSC\\MS-CSC-Rain-Streak-Removal\\20181211\\20181211_141041_3BBB.mkv')
-	df= rate_cal.event_based_im(opt.folder)
+	# df= rate_cal.event_based_im(opt.folder)
+	model_path= 'latest.pth'
+	img=cv2.imread('D:\\Radar Projects\\lizhi\\CCTV\\Videos\\HightIntensity\\20180401\\20180401152758.png')[600:1000,300:600]
+	rate= rate_cal.img_based_im(img,
+								model=rate_cal.pretrained_model(model_path), PCA=False)
+	print(model_path,rate)

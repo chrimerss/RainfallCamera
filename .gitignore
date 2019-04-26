@@ -11,3 +11,5 @@ GPU_version/*
 visualisation/*
 svm_model.joblib
 demo/*
+*.ipynb_checkpoints
+validation/*

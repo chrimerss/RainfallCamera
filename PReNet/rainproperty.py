@@ -81,7 +81,7 @@ class RainProperty:
 		self.streak_diameter=10
 		assert self.streak_diameter<self.A, 'threshold diameter is higher than A'
 
-	def streak_process(self,image, graph = False):
+	def streak_process(self,image):
 		'''
 		Args:
 		-----------------
@@ -116,7 +116,7 @@ class RainProperty:
 					cv2.rectangle(colored_img,(x,y),(x+w,y+h),(0,0,255),1)
 					cv2.putText(colored_img,f'{int(length)}', (x,y),font,0.2,(0,0,255),1,cv2.LINE_AA)				# print(diameter)
 			
-		if graph == True:
+		if self.graph == True:
 			cv2.imshow('detected rain streak',colored_img)
 			cv2.waitKey(0)
 			cv2.destroyAllWindows()

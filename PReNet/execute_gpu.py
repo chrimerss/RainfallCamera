@@ -7,19 +7,19 @@ The pipeline goes as follow:
 	4. assess this method with radar and gauge data.
 '''
 import cv2
-from DataPrep import video2image
+from .dataprep import video2image
 import datetime
-from RainProperty import RainProperty
-from PCA import RainDetection_PCA
+from .rainproperty import RainProperty
+from .pca import RainDetection_PCA
 import os
 import argparse
 import numpy as np
 import pandas as pd
 import torch
 from torch.autograd import Variable
-from utils import *
-from networks import *
-from generator import Generator_lstm
+from .utils import *
+from .networks import *
+from .generator import Generator_lstm
 import time
 import sys
 import logging
