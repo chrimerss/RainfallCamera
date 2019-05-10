@@ -13,3 +13,4 @@ svm_model.joblib
 demo/*
 *.ipynb_checkpoints
 validation/*
+*.xlsx
