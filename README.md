@@ -148,6 +148,7 @@ a local server should be set up at port 8000, in your browser, enter in localhos
    </p>
 
    <br>
+   
 ### _Real-time Monitoring_<a name='real-time'></a>
 
 A real time model is running with in local network. During the experiment, the latency between calculation and real situation is around 10 seconds in a rainy event on CPU, while 2-3 seconds on local GPU (Nvdia GTX 960M). in a rain-free day, it is nearly running real-time without latency for classification.
