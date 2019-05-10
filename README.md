@@ -19,8 +19,9 @@
 ### 7. [Reference](#reference)
 ### 8. [Misc](#misc)
 #### 8.1 [Demo](#demo)
-#### 8.2 [To-do List](#todo)
-#### 8.3 [Updates](#update)
+#### 8.2 [Real-time Monitoring](#real-time)
+#### 8.3 [To-do List](#todo)
+#### 8.4 [Updates](#update)
 
 
 
@@ -147,19 +148,26 @@ a local server should be set up at port 8000, in your browser, enter in localhos
    </p>
 
    <br>
+### _Real-time Monitoring_<a name='real-time'></a>
+
+A real time model is running with in local network. During the experiment, the latency between calculation and real situation is around 10 seconds in a rainy event on CPU, while 2-3 seconds on local GPU (Nvdia GTX 960M). in a rain-free day, it is nearly running real-time without latency for classification.
+
+I made SMS alert when heavy rain approaches because we need data to build the regression model. Now we are scarce of heavy rainfall data.
+
 
 ### _To-do list_<a name='todo'></a>
 - [x] build dask task manager
 - [x] add classifier
 - [x] Flask server
 - [ ] Host on cloud
-- [ ] add regression model/convert to RGB image
+- [ ] add regression model for heavy events with raw local radar rain rate
 - [ ] night image processing
 - [ ] GUI
 - [x] add visualization
 - [ ] add computational time table
 - [ ] GPU version(convert all dask array to torch array and hard code torch version SVM)
 - [ ] Validation with radar and rain gauges
+- [ ] regression model for low-resolution video
 
 ### _Updates_<a name='update'></a>
     

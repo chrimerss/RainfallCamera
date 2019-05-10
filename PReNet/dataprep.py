@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import dateutil
 from glob import glob
-from utils import addrain, autocrop_night, autocrop_day, normalize
+from .utils import addrain, autocrop_night, autocrop_day, normalize
 import scipy.io
 import os
 import h5py
@@ -34,14 +34,26 @@ def read_video(video_name):
 	video= cv2.VideoCapture(video_name)
 	return video
 
-def video2image(num_frames, video_name, store_img=True,rows=slice(600,1000), cols=slice(300,600)):
+def video2image(num_frames, video_name, store_img=True, crop=False):
 	video= read_video(video_name)
+	#get video infomation
+	width= video.get(3)
+	height= video.get(4)
 	Frames= []
 	ind=0
+	first= True
+	if width==1920 and height==1080:
+		label='Full HD'
+	else:
+		label=f'resolution of video: {width, height}'
 	while True:
 		ret, frame= video.read()
 		if ind==num_frames or not ret:
 			break
+		if first:
+			window_size=(200,200) if height<300 or width<300 else (300,300)
+			rows, cols= autocrop_day(frame, window_size)
+			first=False
 		Frames.append(frame[rows,cols])
 
 	Frames= np.array(Frames)

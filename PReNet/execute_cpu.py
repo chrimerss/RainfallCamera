@@ -6,19 +6,20 @@ The pipeline goes as follow:
 	3. calculate rain rate with Allamano algorithm
 	4. assess this method with radar and gauge data.
 '''
+
 import cv2
-from dataprep import video2image
+from PReNet.dataprep import video2image
 import datetime
-from rainproperty import RainProperty
-from pca import RainDetection_PCA
+from PReNet.rainproperty import RainProperty
+from PReNet.pca import RainDetection_PCA
 import os
 import argparse
 import numpy as np
 import pandas as pd
 import torch
 from torch.autograd import Variable
-from utils import *
-from generator import Generator_lstm
+from PReNet.utils import *
+from PReNet.generator import Generator_lstm
 import time
 import sys
 import logging
@@ -59,7 +60,8 @@ class RRCal(object):
 
 	@staticmethod
 	def _return_frames(video):
-		frames= video2image(1000, video, store_img=False, rows=slice(600,1000), cols=slice(300,600))
+		# frames= video2image(1000, video, store_img=False, rows=slice(600,1000), cols=slice(300,600))
+		frames= video2image(1000, video, store_img=False)
 
 		return frames
 
@@ -132,7 +134,7 @@ class RRCal(object):
 		-------------------
 		rainrate: int More info related to RainProperty
 		'''
-		rainrate= RainProperty(mat=img, graph=True)
+		rainrate= RainProperty(mat=img)
 		return rainrate.rainrate()
 
 	@staticmethod
@@ -237,7 +239,6 @@ class RRCal(object):
 			cv2.imwrite(os.path.join(self.base_path, curr_date.strftime('%Y%m%d%H%M%S')+'.png'), streak)
 			rate= self.single_img_rain_intensity(streak)
 			rainrate_series[curr_date]= rate
-			print(rainrate_series)
 			curr_date+= datetime.timedelta(seconds=1)
 		end_time= time.time()
 		print('Total elapsed time :', round((end_time-start_time)/60,2),'  minutes!' )
@@ -320,8 +321,10 @@ if __name__=='__main__':
 	rate_cal= RRCal('D:\\CCTV\\RainfallCamera\\videos')
 	# rate= rate_cal._tensor_test('D:\\Radar Projects\\lizhi\\CCTV\\Rain Detection\\CSC\\MS-CSC-Rain-Streak-Removal\\20181211\\20181211_141041_3BBB.mkv')
 	# df= rate_cal.event_based_im(opt.folder)
-	model_path= 'latest.pth'
-	img=cv2.imread('D:\\Radar Projects\\lizhi\\CCTV\\Videos\\HightIntensity\\20180401\\20180401152758.png')[600:1000,300:600]
-	rate= rate_cal.img_based_im(img,
-								model=rate_cal.pretrained_model(model_path), PCA=False)
-	print(model_path,rate)
+	# img=cv2.imread('D:\\Radar Projects\\lizhi\\CCTV\\Videos\\HightIntensity\\20180401\\20180401152758.png')[600:1000,300:600]
+	# rate= rate_cal.img_based_im(img,
+	# model=rate_cal.pretrained_model(model_path)
+
+	# print(model_path,rate)
+	video_path= 'D:\\CCTV\\rainfallcamera\\low_res\\20181011\\20181011_153037_0B27.mkv'
+	rate_cal.video_based_im(video_path,PCA=True).to_excel('D:\\CCTV\\rainfallcamera\\low_res.xlsx')

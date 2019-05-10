@@ -51,7 +51,7 @@ def print_network(net):
 
 
 def autocrop_day(src, window_size=(300,300)):
-    h,w = src.shape
+    h,w,_ = src.shape
     min_val= np.inf
     # val= overdetection(src, 2)
     # src[src<=val]=0
