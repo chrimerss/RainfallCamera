@@ -8,11 +8,13 @@ import torchvision.utils as utils
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
-from dataprep import *
-from utils import *
+import sys
+sys.path.append('/PReNet')
+from PReNet.dataprep import *
+from PReNet.utils import *
 from torch.optim.lr_scheduler import MultiStepLR
-from SSIM import SSIM
-from generator import *
+from PReNet.SSIM import SSIM
+from PReNet.generator import *
 
 if torch.cuda.is_available():
 	print('using gpu training ...')

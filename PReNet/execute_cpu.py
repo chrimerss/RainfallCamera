@@ -8,39 +8,37 @@ The pipeline goes as follow:
 '''
 
 import cv2
-from PReNet.dataprep import video2image
+from dataprep import video2image
 import datetime
-from PReNet.rainproperty import RainProperty
-from PReNet.pca import RainDetection_PCA
+from rainproperty import RainProperty
+from pca import RainDetection_PCA
 import os
 import argparse
 import numpy as np
 import pandas as pd
 import torch
 from torch.autograd import Variable
-from PReNet.utils import *
-from PReNet.generator import Generator_lstm
+from utils import *
+from generator import Generator_lstm
 import time
 import sys
 import logging
+from utils import autocrop_day
+import configparser
 
 import warnings
 if not sys.warnoptions:
 		warnings.simplefilter('ignore')
+#====== read configurations===========
+config= configparser.ConfigParser()
+config.read('../camera.ini')
+keys= ['focal_len', 'ex_time', 'f_num','focus_dist','sensor_h','del_l','threshold','streak_diameter']
+PARAMS_CAM= {k:float(config['NC450'][k]) for k in keys}
+PARAMS_RNN= config['PReNet']
+# PARAMS_CAM= (dict(k, config['NC450'][k]) for k in keys)
 
-parser = argparse.ArgumentParser(description="PReNet_Test")
-parser.add_argument("--logdir", type=str, default="logs/real/", help='path to model and log files')
-parser.add_argument("--data_path", type=str, default="datasets/test", help='path to training data')
-parser.add_argument("--folder", type=str, default="20180401", help='folder to run')
-parser.add_argument("--save_path", type=str, default="results/", help='path to save results')
-parser.add_argument("--use_GPU", type=bool, default=True, help='use GPU or not')
-parser.add_argument("--gpu_id", type=str, default="0", help='GPU id')
-parser.add_argument("--which_model", type=str, default="PReNet1.pth", help='model name')
-parser.add_argument("--recurrent_iter", type=int, default=4, help='number of recursive stages')
-opt = parser.parse_args()
-
-if opt.use_GPU:
-	os.environ["CUDA_VISIBLE_DEVICES"] = opt.gpu_id
+if bool(PARAMS_RNN['use_GPU']):
+	os.environ["CUDA_VISIBLE_DEVICES"] = PARAMS_RNN['gpu_id']
 
 #logging_file= opt.save_path+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.log'
 #logging.basicConfig(filename=logging_file, filemode= 'w', 
@@ -62,6 +60,8 @@ class RRCal(object):
 	def _return_frames(video):
 		# frames= video2image(1000, video, store_img=False, rows=slice(600,1000), cols=slice(300,600))
 		frames= video2image(1000, video, store_img=False)
+		if frames is None:
+			raise FileNotFoundError('please check input video path %s'%video)
 
 		return frames
 
@@ -81,11 +81,11 @@ class RRCal(object):
 		model: torch model
 		'''
 		print('Loading model ...\n')
-		model = Generator_lstm(opt.recurrent_iter, opt.use_GPU)
+		model = Generator_lstm(int(PARAMS_RNN['recurrent_iter']), bool(PARAMS_RNN['use_GPU']))
 		print_network(model)
-		if opt.use_GPU:
+		if bool(PARAMS_RNN['use_GPU']):
 			model = model.cuda()
-		model.load_state_dict(torch.load(os.path.join(opt.logdir, model_path), map_location='cpu'))
+		model.load_state_dict(torch.load(PARAMS_RNN['model_path'], map_location='cpu'))
 		model.eval()
    
 		return model
@@ -110,15 +110,15 @@ class RRCal(object):
 			y = normalize(np.float32(y))
 			new_frames[i,:,:,:]=y.transpose(2,0,1)
 		new_frames= Variable(torch.Tensor(new_frames))
-		if opt.use_GPU:
+		if bool(PARAMS_RNN['use_GPU']):
 			new_frames= new_frames.cuda()
 		out, _ = model(new_frames)
 		out = torch.clamp(out, 0., 1.)
 		print('out shape:',out.shape)
 		with torch.no_grad():
-			if opt.use_GPU:
+			if bool(PARAMS_RNN['use_GPU']):
 				torch.cuda.synchronize()
-		if opt.use_GPU:
+		if bool(PARAMS_RNN['use_GPU']):
 			save_out = np.uint8(255 * out.data.cpu().numpy().squeeze())
 		else:
 			save_out = np.uint8(255 * out.data.numpy().squeeze())
@@ -134,7 +134,7 @@ class RRCal(object):
 		-------------------
 		rainrate: int More info related to RainProperty
 		'''
-		rainrate= RainProperty(mat=img)
+		rainrate= RainProperty(mat=img, graph=False,**PARAMS_CAM)
 		return rainrate.rainrate()
 
 	@staticmethod
@@ -142,7 +142,7 @@ class RRCal(object):
 		rainy= cv2.cvtColor(rainy, cv2.COLOR_BGR2GRAY)
 		derain= cv2.cvtColor(derain, cv2.COLOR_BGR2GRAY)
 		diff= rainy- derain
-		diff[derain<50]=0
+		diff[derain<30]=0
 		diff[diff>=threshold]= 255
 		diff[diff<=threshold]= 0
     	
@@ -198,6 +198,9 @@ class RRCal(object):
 		Return:
 		--------------
 		rainrate: pandas.DataFrame
+		
+		updates:
+		add auto crop to video instead if using stagnant frame
 		'''
 		model= self.pretrained_model()
 		morphology_detect= self.activate_PCA()
@@ -217,16 +220,16 @@ class RRCal(object):
 			y = normalize(np.float32(y))
 			y = np.expand_dims(y.transpose(2, 0, 1), 0)
 			y = Variable(torch.Tensor(y))
-			if opt.use_GPU:
+			if bool(PARAMS_RNN['use_GPU']):
 				y = y.cuda()
 			with torch.no_grad():
-				if opt.use_GPU:
+				if bool(PARAMS_RNN['use_GPU']):
 					torch.cuda.synchronize()
 				out, _ = model(y)
 				out = torch.clamp(out, 0., 1.)
-				if opt.use_GPU:
+				if bool(PARAMS_RNN['use_GPU']):
 					torch.cuda.synchronize()
-			if opt.use_GPU:
+			if bool(PARAMS_RNN['use_GPU']):
 				save_out = np.uint8(255 * out.data.cpu().numpy().squeeze())
 			else:
 				save_out = np.uint8(255 * out.data.numpy().squeeze())
@@ -239,6 +242,7 @@ class RRCal(object):
 			cv2.imwrite(os.path.join(self.base_path, curr_date.strftime('%Y%m%d%H%M%S')+'.png'), streak)
 			rate= self.single_img_rain_intensity(streak)
 			rainrate_series[curr_date]= rate
+			print(curr_date.strftime('%Y-%m-%d %H:%M:%S')+':  ',rate)
 			curr_date+= datetime.timedelta(seconds=1)
 		end_time= time.time()
 		print('Total elapsed time :', round((end_time-start_time)/60,2),'  minutes!' )
@@ -280,16 +284,16 @@ class RRCal(object):
 				y = normalize(np.float32(y))
 				y = np.expand_dims(y.transpose(2, 0, 1), 0)
 				y = Variable(torch.Tensor(y))
-				if opt.use_GPU:
+				if bool(PARAMS_RNN['use_GPU']):
 					y = y.cuda()
 				with torch.no_grad():
-					if opt.use_GPU:
+					if bool(PARAMS_RNN['use_GPU']):
 						torch.cuda.synchronize()
 					out, _ = model(y)
 					out = torch.clamp(out, 0., 1.)
-					if opt.use_GPU:
+					if bool(PARAMS_RNN['use_GPU']):
 						torch.cuda.synchronize()
-				if opt.use_GPU:
+				if bool(PARAMS_RNN['use_GPU']):
 					save_out = np.uint8(255 * out.data.cpu().numpy().squeeze())
 				else:
 					save_out = np.uint8(255 * out.data.numpy().squeeze())
@@ -313,18 +317,13 @@ class RRCal(object):
 
 
 if __name__=='__main__':
-	# rate_cal= RRCal(opt.data_path) #modify this
 	# # rate= rate_cal.video_based_im('D:\\Radar Projects\\lizhi\\CCTV\\Rain Detection\\CSC\\MS-CSC-Rain-Streak-Removal\\20181211\\20181211_141041_3BBB.mkv')
-	# df= rate_cal.event_based_im(opt.folder)
-	# np.save(opt.save_path+opt.folder, df)
-	# df.to_excel(opt.save_path+opt.folder+'.xlsx')
 	rate_cal= RRCal('D:\\CCTV\\RainfallCamera\\videos')
 	# rate= rate_cal._tensor_test('D:\\Radar Projects\\lizhi\\CCTV\\Rain Detection\\CSC\\MS-CSC-Rain-Streak-Removal\\20181211\\20181211_141041_3BBB.mkv')
-	# df= rate_cal.event_based_im(opt.folder)
 	# img=cv2.imread('D:\\Radar Projects\\lizhi\\CCTV\\Videos\\HightIntensity\\20180401\\20180401152758.png')[600:1000,300:600]
 	# rate= rate_cal.img_based_im(img,
 	# model=rate_cal.pretrained_model(model_path)
 
 	# print(model_path,rate)
-	video_path= 'D:\\CCTV\\rainfallcamera\\low_res\\20181011\\20181011_153037_0B27.mkv'
-	rate_cal.video_based_im(video_path,PCA=True).to_excel('D:\\CCTV\\rainfallcamera\\low_res.xlsx')
+	video_path= 'D:\\CCTV\\rainfallcamera\\videos\\20190516\\20190516_130642_NC450.mp4'
+	rate_cal.video_based_im(video_path,PCA=True).to_excel('D:\\CCTV\\rainfallcamera\\NC450.xlsx')

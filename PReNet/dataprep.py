@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import dateutil
 from glob import glob
-from .utils import addrain, autocrop_night, autocrop_day, normalize
+from utils import addrain, autocrop_night, autocrop_day, normalize
 import scipy.io
 import os
 import h5py
@@ -54,7 +54,8 @@ def video2image(num_frames, video_name, store_img=True, crop=False):
 			window_size=(200,200) if height<300 or width<300 else (300,300)
 			rows, cols= autocrop_day(frame, window_size)
 			first=False
-		Frames.append(frame[rows,cols])
+		Frames.append(frame[rows[0]:rows[1],cols[0]:cols[1],:])
+		ind+=1
 
 	Frames= np.array(Frames)
 

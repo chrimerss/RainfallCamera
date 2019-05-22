@@ -13,6 +13,7 @@ import os
 import scipy.io
 from scipy.optimize import fsolve, minimize
 import logging
+import configparser
 
 
 
@@ -57,19 +58,21 @@ class RainProperty:
 		_Dist_fun(): optimization function used for CalDistance
 
 	'''
-	def __init__(self, mat, focal_len=20, ex_time=1/250, f_num=1.85, focus_dist=50, sensor_h=2.8, threshold=0.08, verbose=False, graph=False):
+	def __init__(self, mat,focal_len=20, ex_time=1/250.,f_num=1.85,
+				focus_dist=50., sensor_h=2.8, del_l=50,threshold=0.08,streak_diameter=10,verbose=False,graph=False,):
 		# pass in the video matrix (h,w,n) haven't considered the colored image yet.
 		# Some camera parameters need to pass in as well. focus length, exposure time, focus distance etc.
 		self.mat = mat  # mat should be a matlab mat name and associated with the named in matlab
 		self.focal_len = focal_len # focal length for typical CCTV is 3.6mm
 		self.ex_time = ex_time
+		self.f_num= f_num
 		self.focus_dist = focus_dist
 		self.sensor_h = sensor_h    #info for sensor height could be found in :https://en.wikipedia.org/wiki/Image_sensor_format#Table_of_sensor_formats_and_sizes
-		self.A = self.focal_len/f_num
+		self.A = self.focal_len/self.f_num
 		self.threshold = threshold
 		self.h, self.w = self.mat.shape
 
-		self.del_l = 50 #Assumption. how to determine it?
+		self.del_l = del_l #Assumption. how to determine it?
 
 		condition = self.mat > self.threshold
 		self.mat[~condition] = 0
@@ -78,7 +81,7 @@ class RainProperty:
 		self.lengths =[]
 		self.verbose= verbose
 		self.graph= graph
-		self.streak_diameter=10
+		self.streak_diameter=streak_diameter
 		assert self.streak_diameter<self.A, 'threshold diameter is higher than A'
 
 	def streak_process(self,image):
@@ -192,9 +195,9 @@ class RainProperty:
 		return total_rain_rate
 
 
-if __name__=='__main__':
-	img_path= 'D:\\Radar Projects\\lizhi\\CCTV\\Test_imgs\\20180324-0307\\Rain-6.png'
-	img= cv2.imread(img_path)
-	img= cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	rain= RainProperty(img)
-	print(rain.rainrate())
+# if __name__=='__main__':
+# 	img_path= 'D:\\Radar Projects\\lizhi\\CCTV\\Test_imgs\\20180324-0307\\Rain-6.png'
+# 	img= cv2.imread(img_path)
+# 	img= cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+# 	rain= RainProperty(img)
+# 	print(rain.rainrate())

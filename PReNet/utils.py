@@ -7,6 +7,7 @@ from skimage.measure.simple_metrics import compare_psnr
 import  os
 import glob
 import cv2
+from numba import jit
 
 
 def findLastCheckpoint(save_dir):
@@ -51,15 +52,26 @@ def print_network(net):
 
 
 def autocrop_day(src, window_size=(300,300)):
-    h,w,_ = src.shape
-    min_val= np.inf
+    #with numba, the cost reduces from 92 seconds to 29 seconds.
+    @jit(nopython=True)
+    def moving_window(h,w, min_val, window_size):
     # val= overdetection(src, 2)
     # src[src<=val]=0
     # src[src>val]=255
-    for i in range(h-window_size[0]):
-        for j in range(w-window_size[1]):
-            tot= src[i:window_size[0]+i, j:j+window_size[1]].sum()
-            if tot<min_val: min_val=tot; rows=slice(i, window_size[0]+i); cols=slice(j,j+window_size[1])
+        for i in range(h-window_size[0]):
+            for j in range(w-window_size[1]):
+                tot= src[i:window_size[0]+i, j:j+window_size[1]].sum()
+                if tot<min_val:
+                    min_val= tot
+                    rows= (i, window_size[0]+i)
+                    cols= (j,j+window_size[1])
+
+        return rows, cols
+    src= cv2.cvtColor(src, cv2.COLOR_BGR2GRAY)
+    h,w= src.shape
+    min_val= np.inf
+
+    rows, cols= moving_window(h,w,min_val,window_size)
 
     return rows, cols
 
