@@ -6,7 +6,8 @@ The pipeline goes as follow:
 	3. calculate rain rate with Allamano algorithm
 	4. assess this method with radar and gauge data.
 '''
-
+import sys
+sys.path.append('PReNet/')
 import cv2
 from dataprep import video2image
 import datetime
@@ -21,7 +22,7 @@ from torch.autograd import Variable
 from utils import *
 from generator import Generator_lstm
 import time
-import sys
+
 import logging
 from utils import autocrop_day
 import configparser
@@ -31,9 +32,9 @@ if not sys.warnoptions:
 		warnings.simplefilter('ignore')
 #====== read configurations===========
 config= configparser.ConfigParser()
-config.read('../camera.ini')
+config.read('D:/CCTV/rainfallcamera/camera.ini')
 keys= ['focal_len', 'ex_time', 'f_num','focus_dist','sensor_h','del_l','threshold','streak_diameter']
-PARAMS_CAM= {k:float(config['NC450'][k]) for k in keys}
+PARAMS_CAM= {k:float(config['Jiang'][k]) for k in keys}
 PARAMS_RNN= config['PReNet']
 # PARAMS_CAM= (dict(k, config['NC450'][k]) for k in keys)
 
@@ -142,7 +143,7 @@ class RRCal(object):
 		rainy= cv2.cvtColor(rainy, cv2.COLOR_BGR2GRAY)
 		derain= cv2.cvtColor(derain, cv2.COLOR_BGR2GRAY)
 		diff= rainy- derain
-		diff[derain<30]=0
+		diff[derain<20]=0
 		diff[diff>=threshold]= 255
 		diff[diff<=threshold]= 0
     	
@@ -187,7 +188,7 @@ class RRCal(object):
 			streak= morphology_detect.gray_frame_derain(streak)
 		rate= self.single_img_rain_intensity(streak)
 		
-		return rate
+		return rate, streak
 
 	def video_based_im(self, video, PCA=True):
 		'''

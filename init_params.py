@@ -35,7 +35,19 @@ config['NC450']= {"focal_len":4,
 				'streak_diameter':10,
 				'del_l':50,
 				'fps':15,
-				'resolution':str((1280,720))}
+				'resolution':(1280,720)}
+
+#========= Camera 3 (Jiang) Parameters ===========
+config['Jiang']= {'focal_len': 4,
+				'ex_time': 1/250,
+				'sensor_h': 4.29,
+				'f_num':2.2,
+				'focus_dist':1.0,
+				'threshold':0.02,
+				'streak_diameter':10,
+				'del_l': 50,
+				'fps': 1,
+				'resolution': str(None)}
 
 #========= classification configuration =========
 config['classification']= {'model_path': 'D:\\CCTV\\rainfallcamera\\classification\\svm_model-4-grid_searched-200x200.joblib',

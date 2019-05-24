@@ -14,3 +14,6 @@ demo/*
 *.ipynb_checkpoints
 validation/*
 *.xlsx
+RainNet/datasets/*
+RainNet/train.h5
+RainNet/logs/*
