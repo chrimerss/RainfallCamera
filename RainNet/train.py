@@ -45,15 +45,16 @@ def dataprep(batch_size):
 
 def train(use_gpu):
 	#load data
-	bsize=4
-	model= RainNet(use_gpu=True)
+	bsize=1
+	model= RainNet(bsize=bsize, use_gpu=True)
 	model_path= 'logs/RainNet.pth'
-	num_epochs= 10000
+	num_epochs= 1000
 	print_network(model)
 	#initialize weights
 	model.apply(init_weights)
 
 	data= Dataset()
+	print("training samples:", len(data))
 	loader_train= DataLoader(dataset= data, batch_size=bsize, shuffle=True)
 
 	criterion= nn.MSELoss()
@@ -61,8 +62,8 @@ def train(use_gpu):
 		model= model.cuda()
 		criterion.cuda()
 
-	optimizer= optim.Adam(model.net.parameters(), lr=1e-2)
-	scheduler= MultiStepLR(optimizer, milestones=[20,40,60,80], gamma=0.1)
+	optimizer= optim.Adam(model.parameters(), lr=1e-4)
+	scheduler= MultiStepLR(optimizer, milestones=[200,400,600,800], gamma=0.1)
 
 	writer= SummaryWriter('logs/')
 	steps=0
@@ -83,12 +84,17 @@ def train(use_gpu):
 			# print('after stack:',inputs.size())
 			# assert np.array(inputs.cpu().detach()).shape==(bsize,2,1,401,401),\
 			# 			'expected input size (%d,2,1, 401,401) but got %s'%(bsize, str(inputs.size()))
-			
+			# test training samples:
+			# cv2.imshow('prev',np.array(imgs_prev.cpu().detach().squeeze()*255.).astype(np.uint8))
+			# cv2.imshow('now',np.array(imgs_now.cpu().detach().squeeze()*255.).astype(np.uint8))
+			# cv2.waitKey(0)
+			# cv2.destroyAllWindows()
 			optimizer.zero_grad()
 			model.train()
 
 			out_prev, out_now= model(inputs)
-			loss= criterion(out_prev, out_now)*100
+			out_prev_denorm, out_now_denorm= out_prev*255., out_now*255.
+			loss= criterion(out_prev_denorm, out_now_denorm)
 
 			loss.backward()
 			optimizer.step()
@@ -96,7 +102,7 @@ def train(use_gpu):
 			model.eval()
 			out_prev, out_now= model(inputs)
 			out_prev,out_now= torch.clamp(out_now,0.,1.),torch.clamp(out_prev,0.,1.)
-			print("[epoch %d/%d][%d/%d]        loss: %.4f"%(epoch+1,num_epochs, i+1, 250, loss.item()))
+			print("[epoch %d/%d][%d/%d]        loss: %.4f"%(epoch+1,num_epochs, i+1, len(data)//bsize, loss.item()))
 
 			if steps%5==0:
 				writer.add_scalar('loss', loss.item(), steps)
@@ -109,6 +115,7 @@ def train(use_gpu):
 		derain= utils.make_grid(out_now.data.squeeze(),nrow=8, normalize=True, scale_each=True)
 		writer.add_image('derain', derain, epoch+1)
 		writer.add_image('origin', rainy, epoch+1)
+
 
 	torch.save(model.state_dict(),model_path)
 

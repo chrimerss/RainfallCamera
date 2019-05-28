@@ -122,8 +122,10 @@ We have three data sources to validate our camera accuracy, first are three rada
    <img src="images/2018-1211-cts.png" height="60%"><br>
    Fig.7 Cumulative Time Series Plot of One Event<br>
    </p>
-    
-
+   
+    <p align="center">
+  [![2018-12-08](http://img.youtube.com/vi/Di0m6gSVwZ4/0.jpg)](http://www.youtube.com/watch?v=Di0m6gSVwZ4 "")
+    </p>
 ## _Reference_<a name='reference'></a>
 
 R. Dongwei, Z. Wangmeng etc. (2019) _Progressive Image Deraining Networks: A Better and Simpler Baseline_  

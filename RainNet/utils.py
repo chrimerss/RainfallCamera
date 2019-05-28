@@ -130,8 +130,8 @@ def print_network(net):
 
 def init_weights(m):
 	classname = m.__class__.__name__
-	# for every Linear layer in a model..
-	if classname.find('Linear') != -1:
+	# for every convolution layer in a model..
+	if classname.find('Conv') != -1:
 		# apply a uniform distribution to the weights and a bias=0
 		m.weight.data.uniform_(0.0, 1.0)
 		m.bias.data.fill_(0)

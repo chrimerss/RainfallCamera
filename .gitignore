@@ -6,6 +6,7 @@ videos/*
 *.ipynb
 *.png
 env/*
+*.mp4
 *.gif
 GPU_version/*
 visualisation/*
@@ -17,3 +18,4 @@ validation/*
 RainNet/datasets/*
 RainNet/train.h5
 RainNet/logs/*
+RainGAN/datasets*
