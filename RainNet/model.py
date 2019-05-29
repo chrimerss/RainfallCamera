@@ -77,4 +77,4 @@ class RainNet(nn.Module):
 		bg_prev= x_prev- rain_prev-noise_prev
 		bg_now= x_now- rain_now- noise_now
 
-		return bg_prev, bg_now
+		return bg_prev, bg_now, rain_prev, rain_now

@@ -8,6 +8,8 @@ import h5py
 from PIL import Image
 import random
 import torch
+import torch.nn as nn
+import torch.nn.functional as F
 
 
 def data_prep():
@@ -135,6 +137,35 @@ def init_weights(m):
 		# apply a uniform distribution to the weights and a bias=0
 		m.weight.data.uniform_(0.0, 1.0)
 		m.bias.data.fill_(0)
+
+class RainLoss(nn.Module):
+	'''
+	differientiable?
+	'''
+	def __init__(self, labmda1=0.1, labmda2=0.1, labmda3=0.4, labmda4=0.4, use_gpu=True):
+		super(RainLoss,self).__init__()
+		self.labmda1= labmda1
+		self.labmda2= labmda2
+		self.labmda3= labmda3
+		self.labmda4= labmda4
+		self.use_gpu= use_gpu
+		if self.use_gpu:
+			self.kernel_v= torch.Tensor([[0,-1,0],[0,0,0],[0,1,0]]).view(1,1,3,3).cuda()
+			self.kernel_h= torch.Tensor([[0,0,0],[-1,0,1],[0,0,0]]).view(1,1,3,3).cuda()
+		else:
+			self.kernel_v= torch.Tensor([[0,-1,0],[0,0,0],[0,1,0]]).view(1,1,3,3)
+			self.kernel_h= torch.Tensor([[0,0,0],[-1,0,1],[0,0,0]]).view(1,1,3,3)
+
+	def forward(self, rain_prev, bg_prev, rain_now, bg_now ):
+		
+		zeros= torch.zeros(rain_now.size(), requires_grad=False).cuda() if self.use_gpu else torch.Tensor(rain_now.size(), requires_grad=False)
+		sparsity= F.l1_loss(rain_now,zeros,reduction='sum')
+		v_smooth= F.l1_loss(F.conv2d(rain_now, self.kernel_v,stride=1,padding=1),zeros,reduction='sum')
+		h_smooth= F.l1_loss(F.conv2d(bg_now, self.kernel_h, stride=1,padding=1),zeros,reduction='sum')
+		t_smooth= F.l1_loss(bg_now,bg_prev, reduction='sum')
+		loss= self.labmda1*sparsity+ self.labmda2*v_smooth+self.labmda3*h_smooth+self.labmda4*t_smooth
+
+		return loss
 
 if __name__=='__main__':
 	pyh5()
