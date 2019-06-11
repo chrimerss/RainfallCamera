@@ -18,7 +18,7 @@ Table1. Training of RainGAN
 
 ### Improvement
 
-- [] Make Discriminator trained  
+- [ ] Make Discriminator trained  
 
 ## Update
 
