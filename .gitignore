@@ -18,4 +18,6 @@ validation/*
 RainNet/datasets/*
 RainNet/train.h5
 RainNet/logs/*
-RainGAN/datasets*
+RainGAN/datasets/*
+*.h5
+c++_files/*

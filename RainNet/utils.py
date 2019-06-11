@@ -13,18 +13,19 @@ import torch.nn.functional as F
 
 
 def data_prep():
-	video_path= '../videos/20180401/20180401_152716_8BB3.mkv'
+	video_path= '../videos/20180401/20180401_153226_6AD4.mkv'
 	cap= cv2.VideoCapture(video_path)
 	ind=0
 	dst= 'datasets/20180401'
 	localtime= video_path.split(os.sep)[-1].split('.')[0]
+	# print(localtime)
 	date, time, _ = localtime.split('_')
 	localtime= datetime.datetime.strptime(date+time, '%Y%m%d%H%M%S')
 	first=True
 	while True:
 		ind+=1
 		ret, frame= cap.read()
-		if not ret or ind>250:
+		if not ret or ind>2:
 			break
 		if first:
 			rows, cols= autocrop(frame, window_size=(401,401))
@@ -61,9 +62,9 @@ def autocrop(src, window_size=(300,300)):
 
 def pyh5(tsize=2):
 	src= 'datasets/'
-	folders= os.listdir(src)
-	key=1
-	train_path= os.path.join('.','train.h5')
+	folders= ['20180401','20181208','20181211','20181212','20181221']
+	key=0
+	train_path= os.path.join('.','train_2.h5')
 	train_data= h5py.File(train_path,'w')
 
 	for folder in folders:
@@ -74,14 +75,14 @@ def pyh5(tsize=2):
 			try:
 				for it in range(tsize):
 					img= cv2.imread(os.path.join(src,folder,img_names[ind+it]))
-					img= cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)/255.
-					_data.append(img)
+					img= cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)/255.
+					_data.append(img[:,:,0])
 				ind+=1
 
 			except IndexError:
 				break
 
-			assert np.array(_data).shape==(2,401,401), \
+			assert np.array(_data).shape==(tsize,401,401), \
 					'expected (2,401,401,3), but got %s'%str(np.array(_data).shape)
 			train_data.create_dataset(str(key),data=np.array(_data))
 			key+=1
@@ -157,7 +158,7 @@ class RainLoss(nn.Module):
 			self.kernel_h= torch.Tensor([[0,0,0],[-1,0,1],[0,0,0]]).view(1,1,3,3)
 
 	def forward(self, rain_prev, bg_prev, rain_now, bg_now ):
-		
+
 		zeros= torch.zeros(rain_now.size(), requires_grad=False).cuda() if self.use_gpu else torch.Tensor(rain_now.size(), requires_grad=False)
 		sparsity= F.l1_loss(rain_now,zeros,reduction='sum')
 		v_smooth= F.l1_loss(F.conv2d(rain_now, self.kernel_v,stride=1,padding=1),zeros,reduction='sum')
@@ -169,3 +170,4 @@ class RainLoss(nn.Module):
 
 if __name__=='__main__':
 	pyh5()
+	# data_prep()

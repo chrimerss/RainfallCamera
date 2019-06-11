@@ -84,7 +84,7 @@ def drawrec(frame, rec):
 	return frame
 
 def main():
-	event_name= 'Event 1'
+	event_name= 'Event 5'
 	use_GPU= True
 	cap= cv2.VideoCapture('D:/CCTV/rainfallcamera/videos/Event/%s.avi'%event_name)
 	start_time= datetime.datetime(2018,7,24,11,24,43)
@@ -107,7 +107,7 @@ def main():
 		if label=='no rain':
 			rainrate=0
 		elif label=='normal':
-			rainrate, _= raindetect(frame[rows[0]:rows[1],cols[0]:cols[1]], rnn_model, use_GPU)
+			rainrate, streak= raindetect(frame[rows[0]:rows[1],cols[0]:cols[1]], rnn_model, use_GPU)
 			frame= drawrec(frame,rec=(cols, rows))
 			# cv2.imshow('original',frame)
 			# cv2.imshow('rainstreak', streak)

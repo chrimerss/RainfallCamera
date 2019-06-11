@@ -180,6 +180,7 @@ class RRCal(object):
 		else:
 			save_out = np.uint8(255 * out.data.numpy().squeeze())
 		save_out = save_out.transpose(1, 2, 0)
+
 		r, g, b = cv2.split(save_out)
 		save_out = cv2.merge([b, g, r])
 		streak= RRCal.rainstreak(input_img, save_out, 30)
@@ -187,7 +188,12 @@ class RRCal(object):
 		if PCA:
 			streak= morphology_detect.gray_frame_derain(streak)
 		rate= self.single_img_rain_intensity(streak)
-		
+		# cv2.imshow('original',input_img)
+		# cv2.imshow('derained', save_out)
+		# cv2.imshow('streak', streak)
+		# cv2.waitKey(0)
+		# cv2.destroyAllWindows()
+
 		return rate, streak
 
 	def video_based_im(self, video, PCA=True):
@@ -235,6 +241,10 @@ class RRCal(object):
 			else:
 				save_out = np.uint8(255 * out.data.numpy().squeeze())
 			save_out = save_out.transpose(1, 2, 0)
+			cv2.imshow('derained: ', save_out)
+			cv2.imshow('original',frame)
+			cv2.waitKey(0)
+			cv2.destroyAllWindows()
 			b, g, r = cv2.split(save_out)
 			save_out = cv2.merge([r, g, b])
 			streak= RRCal.rainstreak(input_img, save_out, 40)
@@ -299,6 +309,7 @@ class RRCal(object):
 				else:
 					save_out = np.uint8(255 * out.data.numpy().squeeze())
 				save_out = save_out.transpose(1, 2, 0)
+
 				r, g, b = cv2.split(save_out)
 				save_out = cv2.merge([b, g, r])
 				streak= RRCal.rainstreak(input_img, save_out, 30)

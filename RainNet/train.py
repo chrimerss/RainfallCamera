@@ -47,8 +47,8 @@ def train(use_gpu):
 	#load data
 	bsize=1
 	model= RainNet(bsize=bsize, use_gpu=True)
-	model_path= 'logs/RainNet_loss1.pth'
-	num_epochs= 100
+	model_path= 'logs/RainNet_feature.pth'
+	num_epochs= 500
 	print_network(model)
 	#initialize weights
 	model.apply(init_weights)
@@ -62,10 +62,15 @@ def train(use_gpu):
 		model= model.cuda()
 		criterion.cuda()
 
-	optimizer= optim.Adam(model.parameters(), lr=1e-4)
-	scheduler= MultiStepLR(optimizer, milestones=[20,40,60,80], gamma=0.1)
+	optimizer= optim.Adam([
+						{'params': model.contexual.parameters(), 'lr':1e-3},
+						{'params': model.featurenet_1.parameters(),'lr':1e-4},
+						{'params': model.featurenet_3.parameters(),'lr':1e-4},
+						], lr=1e-3)
 
-	writer= SummaryWriter('logs/RainLoss')
+	scheduler= MultiStepLR(optimizer, milestones=[100,200,300,400], gamma=0.1)
+
+	writer= SummaryWriter('logs/RainLoss-feature-extraction')
 	steps=0
 	for epoch in range(num_epochs):
 		print('Epoch {}/{}'.format(epoch, num_epochs - 1))
@@ -106,19 +111,27 @@ def train(use_gpu):
 			model.eval()
 			bg_prev, bg_now,rain_prev, rain_now= model(inputs)
 			rain_prev,rain_now= torch.clamp(rain_prev,0.,1.),torch.clamp(rain_now,0.,1.)
+
+			#calculate metrics SSIM, PSNR
+
 			print("[epoch %d/%d][%d/%d]        loss: %.4f"%(epoch+1,num_epochs, i+1, len(data)//bsize, loss.item()))
 
 			if steps%5==0:
 				writer.add_scalar('loss', loss.item(), steps)
 			steps+=1
 
+		batch_num= np.random.randint(0,bsize)
 		model.eval()
 		bg_prev, bg_now,rain_prev, rain_now= model(inputs)
 		rain_prev,rain_now= torch.clamp(rain_prev,0.,1.),torch.clamp(rain_now,0.,1.)
-		rainy= utils.make_grid(inputs.data[-1,1,0,:,:], nrow=8, normalize=True, scale_each=True)
-		rain_streak= utils.make_grid(rain_now.data.squeeze(),nrow=8, normalize=True, scale_each=True)
-		bg= utils.make_grid(bg_now.data.squeeze(),nrow=8, normalize=True, scale_each=True)
-		writer.add_image('rain', rain_streak, epoch+1)
+		rainy= utils.make_grid(inputs.data[batch_num,1,0,:,:], nrow=8, normalize=True, scale_each=True)
+		if bsize>1:
+			rain_streak= utils.make_grid(rain_now.data.squeeze()[batch_num,:,:],nrow=8, normalize=True, scale_each=True)
+			bg= utils.make_grid(bg_now.data.squeeze()[batch_num,:,:],nrow=8, normalize=True, scale_each=True)
+		elif bsize==1:
+			rain_streak= utils.make_grid(rain_now.data.squeeze(),nrow=8, normalize=True, scale_each=True)
+			bg= utils.make_grid(bg_now.data.squeeze(),nrow=8, normalize=True, scale_each=True)
+		writer.add_image('rain', rain_streak,epoch+1)
 		writer.add_image('origin', rainy, epoch+1)
 		writer.add_image('background',bg,epoch+1)
 
