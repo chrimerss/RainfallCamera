@@ -12,13 +12,14 @@ The architecture will follow soon...
 Table1. Training of RainGAN
 
 |date|model|epoches|loss function|model name|log_dir|notes|index|
-|----|-----|----:---|-------:------|------:----|----:---|--:---|----|
+|----|-----|-------|-------------|----------|-------|-----|-----|
 |2019.6.10|Rain Generator+Rain Discriminator+ Background Discriminator|500|MSE (G)+2*D_Loss|generator-6-10|RainGAN-benchmark|bsize:2|1|
 |2019.6.11|Modified Generator+Rain Discriminator+Background Discriminator|500|MSE+2*D_loss|generator-6-11|RainGAN-modified_GAN|bsize 2|2|
 
 ### Improvement
 
 - [ ] Make Discriminator trained  
+- [ ] Replace full-connected with 1x1 kernel for discriminator (Why? see Network in Network)
 
 ## Update
 
