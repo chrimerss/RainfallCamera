@@ -61,8 +61,11 @@ class ContextBlock(nn.Module):
 			nn.Conv2d(self.input_channels, self.hidden_channels, self.kernel_size,padding=padding,
 					stride=1, dilation=self.dilation),
 			nn.LeakyReLU(),
+			nn.BatchNorm2d(self.hidden_channels),
 			nn.Conv2d(self.hidden_channels, self.input_channels, self.kernel_size, padding=padding,
-					stride=1, dilation=self.dilation)
+					stride=1, dilation=self.dilation),
+			nn.LeakyReLU(),
+			nn.BatchNorm2d(self.input_channels)
 			)
 
 	def forward(self, x):
@@ -101,18 +104,18 @@ class RainNet(nn.Module):
 		self.bsize=bsize
 		self.tsize=tsize
 		self.use_gpu= use_gpu
-		self.kernel_v= torch.Tensor([[-1,0,1],[-1,2,1],[-1,0,1]]).view(1,1,3,3)
-		self.kernel_h= torch.Tensor([[-1,-1,-1],[0,2,0],[1,1,1]]).view(1,1,3,3)
-		self.downsample_net_4_1= nn.Sequential(
-						nn.Conv2d(4,1,3,1,1),
-						nn.ReLU(True),
-						nn.BatchNorm2d(1)
-							)
-		self.downsample_net_2_1= nn.Sequential(
-						nn.Conv2d(2,1,3,1,1),
-						nn.ReLU(True),
-						nn.BatchNorm2d(1)
-							)
+		# self.kernel_v= torch.Tensor([[-1,0,1],[-1,2,1],[-1,0,1]]).view(1,1,3,3)
+		# self.kernel_h= torch.Tensor([[-1,-1,-1],[0,2,0],[1,1,1]]).view(1,1,3,3)
+		# self.downsample_net_4_1= nn.Sequential(
+		# 				nn.Conv2d(4,1,3,1,1),
+		# 				nn.ReLU(True),
+		# 				nn.BatchNorm2d(1)
+		# 					)
+		# self.downsample_net_2_1= nn.Sequential(
+		# 				nn.Conv2d(2,1,3,1,1),
+		# 				nn.ReLU(True),
+		# 				nn.BatchNorm2d(1)
+		# 					)
 		# self.featurenet_3= nn.Sequential(
 		# 	nn.Conv2d(3,32,3,stride=1,padding=1),		   #(32,401,401)
 		# 	nn.MaxPool2d(2),                               #(32,200,200)

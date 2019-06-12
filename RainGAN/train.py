@@ -7,7 +7,7 @@ import torchvision.utils as utils
 from torch.utils.data import DataLoader
 from model import BGDescriminator,RainDescriminator,RainNet   #load three models
 from dataprep import DataSet_GAN
-from loss import RainLoss, RainLoss2
+from loss import RainLoss, GenLoss2
 import cv2
 import numpy as np
 import argparse
@@ -75,13 +75,14 @@ def train():
 	Generator.apply(init_weights) #initialize model
 
 	#loss function
-	criterion= RainLoss2(bsize)
+	g_criterion= GenLoss2(bsize)
+	# d_criterion= 
 
 	if use_gpu:
 		Generator= Generator.cuda()
 		bg_D= bg_D.cuda()
 		rain_D= rain_D.cuda()
-		criterion= criterion.cuda()
+		g_criterion= g_criterion.cuda()
 	
 	bg_D.load_state_dict(torch.load(cmd.bg_D_path))
 	rain_D.load_state_dict(torch.load(cmd.rain_D_path))
@@ -119,8 +120,8 @@ def train():
 
 			bg_prev, bg_now,rain_prev, rain_now= Generator(inputs)
 
-			bg_prev= bg_prev*255.
-			bg_now= bg_now*255.
+			prev_bg= bg_prev.clone()*255.
+			now_bg= bg_now.clone()*255.
 
 			#mask rain streak
 			rain_now= mask(rain_now)
@@ -128,21 +129,22 @@ def train():
 			D_bg= bg_D(bg_now)
 			D_rain= rain_D(rain_now)
 
-			loss= criterion(imgs_now, bg_prev, bg_now, rain_now, D_rain, D_bg)
+			g_loss= g_criterion(imgs_now, prev_bg, now_bg, rain_now, D_rain, D_bg)
 
-			loss.backward()
+			g_loss.backward()
 			optimizer.step()
 
 			print(
 				'[%d/%d][%d/%d]    Total loss: %.4f    Accuracy: %.2f '%(
-				epoch, epoches, i, len(data)//bsize, loss.item(), -loss.item()
+				epoch, epoches, i, len(data)//bsize, g_loss.item(), -g_loss.item()
 																		)
 				)
 
 			if i%10==0 and cmd.writer:
-				writer.add_scalar('loss',loss.item(),steps+1)
+				writer.add_scalar('loss',g_loss.item(),steps+1)
 
 			steps+=1
+
 			del bg_now, bg_prev, rain_prev, rain_now
 
 		if cmd.writer:

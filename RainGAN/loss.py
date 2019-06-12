@@ -36,10 +36,10 @@ class RainLoss(nn.Module):
 
 		return lambda1*term_1+ lambda2*term_2+ lambda3*term_3
 
-class RainLoss2(nn.Module):
+class GenLoss2(nn.Module):
 	'''SSIM + Rain Discriminator + Background Discriminator'''
 	def __init__(self, bsize, use_gpu=True, window_size = 11, size_average = True):
-		super(RainLoss2, self).__init__()
+		super(GenLoss2, self).__init__()
 		self.bsize= bsize
 		self.use_gpu=use_gpu
 		self.window_size = window_size
@@ -51,7 +51,7 @@ class RainLoss2(nn.Module):
 		# term 1 
 		window= self.window.cuda() if self.use_gpu else self.window
 		# ssim= msssim(bg_now, bg_prev, self.window_size, self.size_average, normalize=True)
-		now_img= imgs_now[:,0,:,:,:].clone()
+		now_img= imgs_now[:,0,:,:,:].clone()*255.
 		ssim= _ssim(now_img, bg_now, window, self.window_size, self.channel, self.size_average)
 		term_1= F.l1_loss(bg_prev, bg_now)
 		#term 2
@@ -74,6 +74,13 @@ class RainLoss2(nn.Module):
 			-ssim,term_1,term_2,term_3))
 
 		return lambda1*(-ssim)+ lambda2*term_1+ lambda3*term_2+ lambda4*term_3
+
+class DisLoss(nn.Module):
+    def __init__(self):
+        super(DisLoss, self).__init__()
+
+    def forward(self, ):
+        pass
 
 
 def _ssim(img1, img2, window, window_size, channel, size_average = True):
