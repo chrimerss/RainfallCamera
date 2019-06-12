@@ -7,7 +7,7 @@ import torchvision.utils as utils
 from torch.utils.data import DataLoader
 from model import BGDescriminator,RainDescriminator,RainNet   #load three models
 from dataprep import DataSet_GAN
-from loss import RainLoss
+from loss import RainLoss, RainLoss2
 import cv2
 import numpy as np
 import argparse
@@ -16,14 +16,14 @@ CONFIG= {
 	'use_gpu':True,
 	'batch_size':2,
 	'epoches':500,
-	'model_path_gan':'logs/generator-6-11.pth',
+	'model_path_gan':'logs/generator-6-12.pth',
 	'bg_D_path':'logs/BGDiscriminator.pth',
 	'rain_D_path':'logs/RainDiscriminator.pth',
 	'lr':1e-3,
 	'scheduled_milestone':list((100, 200, 400)),
 	'writer': True,
 	'gamma':0.1,
-	'writer_path':'logs/RainGAN-loss_amplified-gan',
+	'writer_path':'logs/RainGAN-loss_ssim-gan',
 	'save_progressive_model': True
 }
 
@@ -53,7 +53,7 @@ def train():
 	print('|-------------------Model Training Setup--------------|\n|use GPU:  %r                                       |\n\
 |batch size:  %d                                       |\n|epoches:  %d                                        |\n\
 |learning rate:  %.6f                             |\n|gamma:    %.2f                                       |\n\
-|-----------------------------------------------------|'%(cmd.use_gpu,cmd.batch_size,cmd.epoches,cmd.gamma,cmd.lr))
+|-----------------------------------------------------|'%(cmd.use_gpu,cmd.batch_size,cmd.epoches,cmd.lr,cmd.gamma))
 
 	use_gpu=cmd.use_gpu
 	bsize=cmd.batch_size
@@ -68,11 +68,14 @@ def train():
 	bg_D= BGDescriminator( use_gpu)
 	rain_D= RainDescriminator(use_gpu)
 	print('total samples :' , len(data))
+	# print('model structure: ', Generator)
+	num_params(Generator)
+
 
 	Generator.apply(init_weights) #initialize model
 
 	#loss function
-	criterion= RainLoss(bsize)
+	criterion= RainLoss2(bsize)
 
 	if use_gpu:
 		Generator= Generator.cuda()
@@ -116,8 +119,6 @@ def train():
 
 			bg_prev, bg_now,rain_prev, rain_now= Generator(inputs)
 
-			del rain_prev
-
 			bg_prev= bg_prev*255.
 			bg_now= bg_now*255.
 
@@ -126,9 +127,8 @@ def train():
 
 			D_bg= bg_D(bg_now)
 			D_rain= rain_D(rain_now)
-			print(D_bg.size(), D_bg)
 
-			loss= criterion(bg_prev, bg_now, rain_now, D_rain, D_bg)
+			loss= criterion(imgs_now, bg_prev, bg_now, rain_now, D_rain, D_bg)
 
 			loss.backward()
 			optimizer.step()
@@ -143,7 +143,7 @@ def train():
 				writer.add_scalar('loss',loss.item(),steps+1)
 
 			steps+=1
-		del bg_now, bg_prev, rain_prev, rain_now
+			del bg_now, bg_prev, rain_prev, rain_now
 
 		if cmd.writer:
 			batch_num= np.random.randint(0,bsize)
@@ -185,6 +185,13 @@ def mask(tensor):
 	tensor[~mask]=0
 
 	return tensor
+
+def num_params(net):
+    num_params = 0
+    for param in net.parameters():
+        num_params += param.numel()
+    # print(net)
+    print('Total number of parameters: %d' % num_params)
 
 if __name__=='__main__':
 	train()

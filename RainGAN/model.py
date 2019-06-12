@@ -13,6 +13,8 @@ import numpy as np
 '''
 Model parameters: 94505 -2019.5.26
 
+Model parameters: 23M   -2019.6.12
+
 Equations to evaluate dimension: (L_in+2*padding-dilation*(kernel_size-1)-1)/stride+1
 '''
 class Flatten(nn.Module):

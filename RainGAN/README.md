@@ -11,10 +11,11 @@ The architecture will follow soon...
 
 Table1. Training of RainGAN
 
-|date|model|epoches|loss function|model name|log_dir|notes|index|
-|----|-----|----:---|-------:------|------:----|----:---|--:---|----|
-|2019.6.10|Rain Generator+Rain Discriminator+ Background Discriminator|500|MSE (G)+2*D_Loss|generator-6-10|RainGAN-benchmark|bsize:2|1|
-|2019.6.11|Modified Generator+Rain Discriminator+Background Discriminator|500|MSE+2*D_loss|generator-6-11|RainGAN-modified_GAN|bsize 2|2|
+|date|model|# params|epoches|loss function|model name|log_dir|index|
+|----|-----|--------|-------|-------------|----------|-------|-----|
+|2019.6.10|Rain Generator+Rain Discriminator+ Background Discriminator| |500|MSE (G)+2*D_Loss|generator-6-10|RainGAN-benchmark|1|
+|2019.6.11|Modified Generator+Rain Discriminator+Background Discriminator| |500|MSE+2*D_loss|generator-6-11|RainGAN-modified_GAN|2|
+|2019.6.12|Modified Generator+Rain Discriminator+Background Discriminator|23M|500|ssim+l1_loss+2*D_loss|generator-6-12|ssim-gan|3|
 
 ### Improvement
 
