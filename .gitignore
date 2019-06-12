@@ -23,3 +23,4 @@ RainGAN/logs/*
 *.h5
 c++_files/*
 presentation/*
+*.pth
