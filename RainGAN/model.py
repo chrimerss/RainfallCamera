@@ -148,9 +148,9 @@ class RainNet(nn.Module):
 		# 	nn.Conv2d(16,1,4,padding=2,stride=1),
 		# 	nn.ReLU(True)
 		# 	)
-		self.contexual_3= ContextualLayer(1,32, kernel_size=3)
-		self.contexual_5= ContextualLayer(1,32,kernel_size=5)
-		self.contexual_7=ContextualLayer(1,32,kernel_size=7)
+		self.contexual_3= ContextualLayer(1,16, kernel_size=3)
+		self.contexual_5= ContextualLayer(1,16,kernel_size=5)
+		self.contexual_7=ContextualLayer(1,16,kernel_size=7)
 		self.seb= SEBlock()
 
 
@@ -252,6 +252,7 @@ class RainNet(nn.Module):
 
 
 class RainDescriminator(nn.Module):
+
 	def __init__(self, use_gpu=True):
 		super(RainDescriminator,self).__init__()
 		self.clsnet= nn.Sequential(

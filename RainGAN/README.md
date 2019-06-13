@@ -16,14 +16,14 @@ Table1. Training of RainGAN
 |2019.6.10|Rain Generator+Rain Discriminator+ Background Discriminator| |500|MSE (G)+2*D_Loss|generator-6-10|RainGAN-benchmark|1|
 |2019.6.11|Modified Generator+Rain Discriminator+Background Discriminator| |500|MSE+2*D_loss|generator-6-11|RainGAN-modified_GAN|2|
 |2019.6.12|Modified Generator+Rain Discriminator+Background Discriminator|23M|500|ssim+l1_loss+2*D_loss|generator-6-12|ssim-gan|3|
+|2019.6.13|Modified Generator+Rain Discriminator+Background Discriminator|23M+72K+83K|500|G loss +D loss|generator-6-13, D-rain-6-13, D-bg-6-13|ssim-gan|4|
 
 
 ### Improvement
 
 - [x] Add ssim loss
 - [x] Add BatchNorm to avoid blowing
-- [ ] Make Discriminator trained  (Why? because discriminator sometimes make false justification)
-- [ ] Replace full-connected with 1x1 kernel for discriminator (Why? see Network in Network)
+- [x] Make Discriminator trained  (Why? because discriminator sometimes make false justification)
 
 ## Update
 
@@ -40,3 +40,9 @@ Previous version of generator does not work properly because wrongly defined dil
 ### 2019.6.12 
 
 Model Index 3: It is found that the generator outputs background with noises rather than what we expect. To prevent this, I constrained another loss function - SSIM - which compares background and rainy image because the similarity will to some extent tell a story.
+
+Fails, the model converges to erase everything from rain streaks
+
+### 2019.6.13
+
+Model Index 4: Made truly generative adversarial network

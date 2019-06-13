@@ -70,17 +70,33 @@ class GenLoss2(nn.Module):
 		#term 3: bg GAN loss
 			term_3+= D_bg[b]
 
-		print('Generator ssim loss: %.4f, Generator l1 loss: %.4f rain discriminator loss: %.4f, background discriminator loss %.4f'%(
-			-ssim,term_1,term_2,term_3))
+		# print('Generator ssim loss: %.4f, Generator l1 loss: %.4f rain discriminator loss: %.4f, background discriminator loss %.4f'%(
+		# 	-ssim,term_1,term_2,term_3))
 
 		return lambda1*(-ssim)+ lambda2*term_1+ lambda3*term_2+ lambda4*term_3
 
 class DisLoss(nn.Module):
-    def __init__(self):
+    def __init__(self,bsize, use_gpu=True):
         super(DisLoss, self).__init__()
+        self.use_gpu= use_gpu
+        self.bsize= bsize
 
-    def forward(self, ):
-        pass
+    def forward(self, true_D_rain, true_label_rain, fake_D_rain, true_D_bg, true_label_bg, fake_D_bg):
+
+        real_loss_rain= F.binary_cross_entropy(true_D_rain, true_label_rain)
+        real_loss_bg= F.binary_cross_entropy(true_D_bg, true_label_bg)
+
+        fake_loss_rain= torch.zeros(1)
+        fake_loss_bg= torch.zeros(1)
+        if self.use_gpu:
+            fake_loss_rain=fake_loss_rain.cuda()
+            fake_loss_bg= fake_loss_bg.cuda()
+        for b in range(self.bsize):
+                fake_loss_rain+= fake_D_rain[b]
+                fake_loss_bg+= 1-fake_D_bg[b]
+
+        return real_loss_rain+ real_loss_bg+ fake_loss_rain+fake_loss_bg
+        
 
 
 def _ssim(img1, img2, window, window_size, channel, size_average = True):
