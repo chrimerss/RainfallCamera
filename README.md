@@ -123,7 +123,7 @@ We have three data sources to validate our camera accuracy, first are three rada
    Fig.7 Cumulative Time Series Plot of One Event<br>
    <img src="images/plots-12-11-smoothed.png" width="60%"><br>
    Fig.8 Time Series Plot of One Event<br>
-   <img src="images/plots-12-11-revisd-cumulative.png" width="60%"><br>
+   <img src="images/plots-12-11-revised-cumulative.png" width="60%"><br>
    Fig.9 Cumulative Time Series Plot of One Event<br>
    <img src="images/plots-12-12-ts.png" width="60%"><br>
    Fig.10 Time Series Plot of One Event<br>
@@ -131,9 +131,8 @@ We have three data sources to validate our camera accuracy, first are three rada
    Fig.11 Cumulative Time Series Plot of One Event<br>      
    </p>
    
-  <p align="center">
-  [![2018-12-08](http://img.youtube.com/vi/Di0m6gSVwZ4/0.jpg)](http://www.youtube.com/watch?v=Di0m6gSVwZ4 "")
-  </p>
+   
+[![2018-12-08](http://img.youtube.com/vi/Di0m6gSVwZ4/0.jpg)](http://www.youtube.com/watch?v=Di0m6gSVwZ4 "")
   
   
 ## _Reference_<a name='reference'></a>
