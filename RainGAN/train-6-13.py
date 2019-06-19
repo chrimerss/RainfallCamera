@@ -144,7 +144,7 @@ def train():
 			bg_D.train()
 			rain_D.train()
 
-			imgs_prev, imgs_now= Variable(imgs_prev), Variable(imgs_now)
+			# imgs_prev, imgs_now= Variable(imgs_prev), Variable(imgs_now)
 
 			if use_gpu:
 				imgs_prev, imgs_now= imgs_prev.cuda(), imgs_now.cuda()
@@ -185,8 +185,8 @@ def train():
 			optimizer_G.step()
 
 			print(
-				'[%d/%d][%d/%d]    Generator loss: %.4f    discriminator loss: %.4f'%(
-				epoch, epoches, i, len(data)//bsize, g_loss.item(), d_loss.item())
+				'[%d/%d][%d/%d]    Generator loss: %.4f    discriminator loss: %.4f    Total loss: %.4f'%(
+				epoch, epoches, i, len(data)//bsize, g_loss.item(), d_loss.item(), g_loss.item()+d_loss.item())
 				)
 
 			if i%10==0 and cmd.writer:
@@ -205,10 +205,10 @@ def train():
 			rain_prev,rain_now= torch.clamp(rain_prev,0.,1.),torch.clamp(rain_now,0.,1.)
 			rainy= utils.make_grid(inputs.data[batch_num,1,0,:,:], nrow=8, normalize=True, scale_each=True)
 			if bsize>1:
-				rain_streak= utils.make_grid(rain_now.data.squeeze()[batch_num,:,:],nrow=8, normalize=True, scale_each=True)
+				rain_streak= utils.make_grid(rain_now.squeeze()[batch_num,:,:],nrow=8, normalize=True, scale_each=True)
 				bg= utils.make_grid(bg_now.data.squeeze()[batch_num,:,:],nrow=8, normalize=True, scale_each=True)
 			elif bsize==1:
-				rain_streak= utils.make_grid(rain_now.data.squeeze(),nrow=8, normalize=True, scale_each=True)
+				rain_streak= utils.make_grid(rain_now.squeeze(),nrow=8, normalize=True, scale_each=True)
 				bg= utils.make_grid(bg_now.data.squeeze(),nrow=8, normalize=True, scale_each=True)
 			
 			writer.add_image('rain', rain_streak,epoch+1)
@@ -219,7 +219,7 @@ def train():
 		scheduler_D.step()
 
 		if epoch%50==0 and cmd.save_progressive_model:
-			torch.save(Generator.state_dict(), 'generator-epoch-%d-6-10.pth'%epoch)
+			torch.save(Generator.state_dict(), 'generator-epoch-%d-6-17.pth'%epoch)
 
 	torch.save(Generator.state_dict(), model_path)
 	torch.save(D_bg.state_dict(), model_path_D_bg)

@@ -49,7 +49,7 @@ def frame():
     while True:
         video_ind+=1
         print(video_ind,'/',tot_videos)
-        if video_ind>= tot_videos:
+        if video_ind>= 2:
             break
         video= videos_path[video_ind]
         for i, frame in read_video(video):
@@ -57,6 +57,22 @@ def frame():
             ind+=1
             yield cv2.resize(frame,(480,270)), df_date.iloc[:ind+1,:]
 
+def mv(series, window=30):
+    """
+    Applies simple moving average
+    Input: 
+
+    series: pd.series
+    window: seconds, determine the stride
+
+    Return:
+
+    results: pd.series
+    """
+    if not isinstance(series, pd.Series):
+        raise ValueError('expect input pandas series dataframe, but get %s'%(type(series)))
+
+    return series.rolling(window=window, min_periods=1).mean()
 
 def update(args):
     img= args[0]
@@ -66,9 +82,10 @@ def update(args):
     frame_axes.axis('off')
     frame_axes.set_title(_df.index[-1].strftime("%Y-%m-%d %H:%M:%S"))
 
-    ts_axes.plot(_df.index, _df.camera,label='camera', color='red')
-    ts_axes.plot(_df.index, _df.gauge,label='gauge', color='blue')
-    ts_axes.legend(['camera','gauge'],prop={'size': 5})
+    ts_axes.plot(_df.index, _df.camera, label='camera', color='red', marker='_')
+    ts_axes.plot(_df.index, _df.gauge, label='gauge', color='blue')
+    ts_axes.plot(_df.index, mv(_df.camera),label='moving average', color='black')
+    ts_axes.legend(['camera','gauge','moving average'],prop={'size': 5})
     ts_axes.set_ylim([min(df_date.min()[['camera','gauge']]), max(df_date.max()[['camera','gauge']])])
     # ax[1].set_ylim([_df.rain.min(), _df.rain.max()])
     ts_axes.set_xlim([df_date.index[0], df_date.index[-1]])
@@ -92,7 +109,7 @@ def update(args):
     cts_axes.tick_params(axis='both', which='major', labelsize=5)
 
 myFmt = mdates.DateFormatter('%H:%M:%S')
-fig= plt.figure(figsize=(8,4))
+fig= plt.figure(figsize=(10,6))
 grid= plt.GridSpec(2,8,hspace=0.6,wspace=0.4)
 frame_axes= fig.add_subplot(grid[:,0:5])
 ts_axes= fig.add_subplot(grid[:1,5:])

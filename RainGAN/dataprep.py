@@ -75,7 +75,94 @@ def make_rain_data():
 	print('total training samples: ',key)
 
 	return None
-			
+
+def make_syn_paired():
+	"""make synthetic paired rain for training G"""
+	base_dir= 'datasets'
+	dir_list= ['rain_data_train_Heavy', 'rain_data_train_Light']
+	inputs= h5py.File('datasets/synthetic_data_paired_input.h5','w')
+	targets= h5py.File('datasets/synthetic_data_paired_target.h5', 'w')
+
+	for each in dir_list:
+		curr_path= os.path.join(base_dir, each)
+		for repo in os.listdir(curr_path):
+			key= 0
+			print('Processing repo: ',repo,'\n--------------------------')
+			imgs= sorted(os.listdir(os.path.join(curr_path, repo)))
+			for img in imgs:
+				print('processing :',img)
+				src= cv2.imread(os.path.join(curr_path, repo, img))
+				if src is None:
+					raise ValueError('image not read correctly!')
+				src= cv2.cvtColor(src, cv2.COLOR_BGR2YCrCb)[:,:,0]/255.
+				if (np.array(src.shape)<401).any():
+					src= cv2.resize(src, (401,401))
+				else:
+					m,n= src.shape
+					rand_i= np.random.randint(0,m-401)
+					rand_j= np.random.randint(0,n-401)
+					src= src[m:m+401,n:n+401]
+
+				if repo =='rain':
+					if each=='rain_data_train_Heavy':
+						keyword= 'heavy-%s'%img.split('.')[0][:-2]
+					elif each=='rain_data_train_Light':
+						keyword= 'light-%s'%img.split('.')[0][:-2]
+					else:
+						raise NotImplementedError('name doesnot exist!')
+					inputs.create_dataset(keyword, data=np.array(src)[np.newaxis,:,:])
+
+				elif repo=='norain':
+					if each=='rain_data_train_Heavy':
+						keyword= 'heavy-%s'%img.split('.')[0]
+					elif each=='rain_data_train_Light':
+						keyword= 'light-%s'%img.split('.')[0]
+					else:
+						raise NotImplementedError('name doesnot exist!')
+					# print(keyword)
+					targets.create_dataset(keyword, data=np.array(src)[np.newaxis,:,:])
+				
+				key+=1
+
+	inputs.close()
+	targets.close()
+
+class Data_train_Gen(udata.Dataset):
+	def __init__(self, datapath='datasets', tsize=2):
+		self.datapath= datapath
+		inputs= h5py.File(os.path.join(self.datapath, 'synthetic_data_paired_input.h5'), 'r')
+		
+		self.keys= list(inputs.keys())
+
+		self.tsize=tsize
+		
+		random.shuffle(self.keys)
+		inputs.close()
+
+	def __len__(self):
+		return len(self.keys)-1
+
+	def __getitem__(self, index):
+		# if index==0:
+		key_prev= self.keys[index]
+		key_now= self.keys[index+1]
+
+
+		inputs= h5py.File(os.path.join(self.datapath, 'synthetic_data_paired_input.h5'), 'r')
+		targets= h5py.File(os.path.join(self.datapath, 'synthetic_data_paired_target.h5'), 'r')
+		input_prev= np.array(inputs[key_prev])
+		target_prev= np.array(targets[key_prev])
+		input_now= np.array(inputs[key_now])
+		target_now= np.array(inputs[key_now])
+		inputs.close()
+		targets.close()
+		input= np.concatenate([input_prev, input_now], axis=0)[:, np.newaxis,:,:]
+		target= np.concatenate([target_prev, target_now], axis=0)[:, np.newaxis,:,:]
+
+		assert input.shape==(2,1,401,401),'expected (2,1,401,401), but get %s instead'%(str(input.shape))
+		assert target.shape==(2,1,401,401),'expected (2,1,401,401), but get %s instead'%(str(target.shape))
+
+		return torch.Tensor(input), torch.Tensor(target)
 
 class DataSet(udata.Dataset):
 	def __init__(self, datatype='bg'):
@@ -118,9 +205,9 @@ class DataSet(udata.Dataset):
 	def __len__(self):
 		return len(self.keys)
 
-class DataSet_GAN(udata.Dataset):
+class GenData(udata.Dataset):
 	def __init__(self, data_path='datasets', tsize=2):
-		super(DataSet_GAN, self).__init__()
+		super(GenData, self).__init__()
 
 		self.data_path= data_path
 
@@ -150,7 +237,89 @@ class DataSet_GAN(udata.Dataset):
 
 		return torch.Tensor(prev_data[np.newaxis,:,:]), torch.Tensor(now_data[np.newaxis,:,:])
 
+class DisData_rain(udata.Dataset):
+	def __init__(self, datapath='datasets'):
+		super(DisData_rain, self).__init__()
+		self.datapath= datapath
+		inputs= h5py.File(os.path.join(self.datapath, 'dis-train-rain-input.h5'), 'r')
+		# targets= h5py.File(os.path.join(self.datapath, 'dis-train-rain-label.h5'),'r')
+
+		self.keys= list(inputs.keys())
+
+		random.shuffle(self.keys)
+
+		inputs.close()
+		# targets.close()
+	def __len__(self):
+		return len(self.keys)
+
+	def __getitem__(self, index):
+
+		inputs= h5py.File(os.path.join(self.datapath, 'dis-train-rain-input.h5'), 'r')
+		targets= h5py.File(os.path.join(self.datapath, 'dis-train-rain-label.h5'),'r')
+
+		input= np.array(inputs[self.keys[index]])
+		target= np.array(targets[self.keys[index]])
+
+		assert input.shape==(1,401,401),'expected (1,401,401) but found %s'%(str(input.shape))
+		inputs.close()
+		targets.close()
+
+		return torch.Tensor(input), torch.Tensor(target)
+
+class DisData_bg(udata.Dataset):
+	def __init__(self, datapath='datasets'):
+
+		super(DisData_bg, self).__init__()
+		self.datapath= datapath
+		inputs= h5py.File(os.path.join(self.datapath, 'dis-train-bg-input.h5'), 'r')
+		# targets= h5py.File(os.path.join(self.datapath, 'dis-train-rain-label.h5'),'r')
+
+		self.keys= list(inputs.keys())
+
+		random.shuffle(self.keys)
+
+		inputs.close()
+		# targets.close()
+	def __len__(self):
+		return len(self.keys)
+
+	def __getitem__(self, index):
+
+		inputs= h5py.File(os.path.join(self.datapath, 'dis-train-bg-input.h5'), 'r')
+		targets= h5py.File(os.path.join(self.datapath, 'dis-train-bg-label.h5'),'r')
+
+		input= np.array(inputs[self.keys[index]])
+		target= np.array(targets[self.keys[index]])
+
+		assert input.shape==(1,401,401),'expected (1,401,401) but found %s'%(str(input.shape))
+		inputs.close()
+		targets.close()
+
+		return torch.Tensor(input), torch.Tensor(target)
+
+class GanData(udata.Dataset):
+
+	def __init__(self):
+		super(GanData, self).__init__()
+
+		self.data_g= GenData()
+		self.data_d_rain= DisData_rain()
+		self.data_d_bg= DisData_bg()
+
+
+	def __len__(self):
+		return len(self.data_g.keys)
+
+	def __getitem__(self, index):
+
+		g_data= self.data_g[index]
+		rain_data= self.data_d_rain[index]
+		bg_data= self.data_d_bg[index]
+
+		return g_data, rain_data, bg_data
+
 
 if __name__=="__main__":
-	make_bg_data()
+	make_syn_paired()
 

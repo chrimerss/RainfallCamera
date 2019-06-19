@@ -81,6 +81,7 @@ class DisLoss(nn.Module):
         self.use_gpu= use_gpu
         self.bsize= bsize
 
+
     def forward(self, true_D_rain, true_label_rain, fake_D_rain, true_D_bg, true_label_bg, fake_D_bg):
 
         real_loss_rain= F.binary_cross_entropy(true_D_rain, true_label_rain)
@@ -97,7 +98,29 @@ class DisLoss(nn.Module):
 
         return real_loss_rain+ real_loss_bg+ fake_loss_rain+fake_loss_bg
         
+class SSIM(nn.Module):
 
+    def __init__(self,window_size = 11, use_gpu=True,size_average = True):
+        super(SSIM, self).__init__()
+        # self.bsize= bsize
+        self.window_size= window_size
+        self.size_average= size_average
+        self.channel = 1
+        self.use_gpu= use_gpu
+        self.window= create_window(window_size, self.channel)
+
+    def forward(self, bg_prev, bg_now, gt):
+        window= self.window.cuda() if self.use_gpu else self.window
+        # print(bg_prev.sum(), gt_prev.sum())
+        gt_prev= gt[:,0,:,:,:].clone()
+        gt_now= gt[:,1,:,:,:].clone()
+        for b in range(2):
+            if b==0:
+                _ssim_prev= _ssim(bg_prev, gt_prev, window, self.window_size, self.channel, self.size_average)
+            elif b==1:
+                _ssim_now= _ssim(bg_now, gt_now, window, self.window_size, self.channel, self.size_average)
+        # print('previous ssim: ',_ssim_prev, 'now ssim: ', _ssim_now)
+        return _ssim_prev+ _ssim_now
 
 def _ssim(img1, img2, window, window_size, channel, size_average = True):
     mu1 = F.conv2d(img1, window, padding = window_size//2, groups = channel)

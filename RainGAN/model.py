@@ -15,6 +15,8 @@ Model parameters: 94505 -2019.5.26
 
 Model parameters: 23M   -2019.6.12
 
+Model parameters: 23M+80K+65K   -2019.6.13
+
 Equations to evaluate dimension: (L_in+2*padding-dilation*(kernel_size-1)-1)/stride+1
 '''
 class Flatten(nn.Module):
@@ -58,14 +60,14 @@ class ContextBlock(nn.Module):
 		padding= int(self.dilation*(self.kernel_size-1)/2)
 
 		self.contextblock= nn.Sequential(
+			nn.LeakyReLU(),
+			nn.BatchNorm2d(self.input_channels),
 			nn.Conv2d(self.input_channels, self.hidden_channels, self.kernel_size,padding=padding,
 					stride=1, dilation=self.dilation),
 			nn.LeakyReLU(),
 			nn.BatchNorm2d(self.hidden_channels),
 			nn.Conv2d(self.hidden_channels, self.input_channels, self.kernel_size, padding=padding,
 					stride=1, dilation=self.dilation),
-			nn.LeakyReLU(),
-			nn.BatchNorm2d(self.input_channels)
 			)
 
 	def forward(self, x):
@@ -152,6 +154,9 @@ class RainNet(nn.Module):
 		self.contexual_5= ContextualLayer(1,16,kernel_size=5)
 		self.contexual_7=ContextualLayer(1,16,kernel_size=7)
 		self.seb= SEBlock()
+		# self.seb_3= SEBlock()
+		# self.seb_5= SEBlock()
+		# self.seb_7= SEBlock()
 
 
 	def forward(self,x):
@@ -159,8 +164,8 @@ class RainNet(nn.Module):
 
 		# low-pass filter
 
-		x_prev= x[:,0,:,:,:]
-		x_now= x[:,1,:,:,:]
+		x_prev= x[:,0,:,:,:].clone()
+		x_now= x[:,1,:,:,:].clone()
 
 		out_prev_mae_1= self.contexual_3(x_prev)  #(bsize,1,401,401)
 		out_now_mae_1= self.contexual_3(x_now)    #(bsize,1,401,401)
@@ -169,14 +174,14 @@ class RainNet(nn.Module):
 		out_prev_se_1= self.seb(out_prev_mae_1)
 		out_now_se_1= self.seb(out_now_mae_1)
 
-		out_prev_mae_2= self.contexual_5(out_prev_se_1)
-		out_now_mae_2= self.contexual_5(out_now_se_1)
+		out_prev_mae_2= self.contexual_5(x_prev)
+		out_now_mae_2= self.contexual_5(x_now)
 
 		out_prev_se_2= self.seb(out_prev_mae_2)
 		out_now_se_2= self.seb(out_now_mae_2)
 
-		out_prev_mae_3= self.contexual_7(out_prev_se_2)
-		out_now_mae_3= self.contexual_7(out_now_se_2)
+		out_prev_mae_3= self.contexual_7(x_prev)
+		out_now_mae_3= self.contexual_7(x_now)
 
 		out_prev_se_3= self.seb(out_prev_mae_3)
 		out_now_se_3= self.seb(out_now_mae_3)

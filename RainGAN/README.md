@@ -46,3 +46,7 @@ Fails, the model converges to erase everything from rain streaks
 ### 2019.6.13
 
 Model Index 4: Made truly generative adversarial network
+
+### 2019.6.17
+
+I think it's better to pre-train generator first in order to accelerate the model performance. In such sense, I prepared 100 synthetic images to train, and use GAN model to fine-train.
