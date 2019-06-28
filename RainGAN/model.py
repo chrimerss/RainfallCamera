@@ -50,7 +50,7 @@ class SEBlock(nn.Module):
 		return out
 
 class ContextBlock(nn.Module):
-	def __init__(self, input_channels, hidden_channels, kernel_size, dilation):
+	def __init__(self, input_channels, hidden_channels, kernel_size, dilation=1):
 		super(ContextBlock, self).__init__()
 		self.input_channels= input_channels
 		self.hidden_channels= hidden_channels
@@ -62,11 +62,11 @@ class ContextBlock(nn.Module):
 		self.contextblock= nn.Sequential(
 			nn.LeakyReLU(),
 			nn.BatchNorm2d(self.input_channels),
-			nn.Conv2d(self.input_channels, self.hidden_channels, self.kernel_size,padding=padding,
+			nn.Conv2d(self.input_channels, self.hidden_channels*2, self.kernel_size,padding=padding,
 					stride=1, dilation=self.dilation),
 			nn.LeakyReLU(),
-			nn.BatchNorm2d(self.hidden_channels),
-			nn.Conv2d(self.hidden_channels, self.input_channels, self.kernel_size, padding=padding,
+			nn.BatchNorm2d(self.hidden_channels*2),
+			nn.Conv2d(self.hidden_channels*2, self.hidden_channels, self.kernel_size, padding=padding,
 					stride=1, dilation=self.dilation),
 			)
 
@@ -77,25 +77,25 @@ class ContextBlock(nn.Module):
 
 
 class ContextualLayer(nn.Module):
-	def __init__(self,input_channels,hidden_channels, kernel_size):
+	def __init__(self,input_channels,hidden_channels ):
 		super(ContextualLayer, self).__init__()
 		self.input_channels= input_channels
 		self.hidden_channels= hidden_channels
-		self.kernel_size=kernel_size
 
 
-		self.p1= ContextBlock(self.input_channels, self.hidden_channels, self.kernel_size, dilation=1)
+		self.p1= ContextBlock(self.input_channels, self.hidden_channels, 3)
 
-		self.p2= ContextBlock(self.input_channels, self.hidden_channels, self.kernel_size, dilation=2)
+		self.p2= ContextBlock(self.input_channels, self.hidden_channels, 5)
 
-		self.p3= ContextBlock(self.input_channels, self.hidden_channels,  self.kernel_size, dilation=3)
+		self.p3= ContextBlock(self.input_channels, self.hidden_channels, 7)
 
 	def forward(self, x):
 		out1= self.p1(x)
 		out2= self.p2(x)
 		out3= self.p3(x)
 
-		out= out1+ out2+ out3
+		# print(out1.size())
+		out= torch.cat([out1, out2, out3], dim=1)    #(bsize, 3*hidden_channels)
 
 		return out
 
@@ -106,57 +106,15 @@ class RainNet(nn.Module):
 		self.bsize=bsize
 		self.tsize=tsize
 		self.use_gpu= use_gpu
-		# self.kernel_v= torch.Tensor([[-1,0,1],[-1,2,1],[-1,0,1]]).view(1,1,3,3)
-		# self.kernel_h= torch.Tensor([[-1,-1,-1],[0,2,0],[1,1,1]]).view(1,1,3,3)
-		# self.downsample_net_4_1= nn.Sequential(
-		# 				nn.Conv2d(4,1,3,1,1),
-		# 				nn.ReLU(True),
-		# 				nn.BatchNorm2d(1)
-		# 					)
-		# self.downsample_net_2_1= nn.Sequential(
-		# 				nn.Conv2d(2,1,3,1,1),
-		# 				nn.ReLU(True),
-		# 				nn.BatchNorm2d(1)
-		# 					)
-		# self.featurenet_3= nn.Sequential(
-		# 	nn.Conv2d(3,32,3,stride=1,padding=1),		   #(32,401,401)
-		# 	nn.MaxPool2d(2),                               #(32,200,200)
-		# 	nn.ReLU(True),
-		# 	nn.Conv2d(32,64,3,1,1),							#(32,100,100)
-		# 	nn.MaxPool2d(2),
-		# 	nn.ReLU(True),
-		# 	nn.Conv2d(64,32,3,1,1),
-		# 	nn.Upsample(scale_factor=2, mode='nearest'),    #(32,200,200)
-		# 	nn.ReLU(True),
-		# 	nn.Conv2d(32,16,3,1,1),
-		# 	nn.Upsample(scale_factor=2, mode='nearest'),    #(16,400,400)
-		# 	nn.ReLU(True),
-		# 	nn.Conv2d(16,1,4,padding=2,stride=1),
-		# 	nn.ReLU(True)
-		# 	)
-		# self.featurenet_1= nn.Sequential(
-		# 	nn.Conv2d(1,32,3,stride=1,padding=1),		   #(32,401,401)
-		# 	nn.MaxPool2d(2),                               #(32,201,201)
-		# 	nn.ReLU(True),
-		# 	nn.Conv2d(32,64,3,1,1),							#(32,101,101)
-		# 	nn.MaxPool2d(2),
-		# 	nn.ReLU(True),
-		# 	nn.Conv2d(64,32,3,1,1),
-		# 	nn.Upsample(scale_factor=2, mode='nearest'),
-		# 	nn.ReLU(True),
-		# 	nn.Conv2d(32,16,3,1,1),
-		# 	nn.Upsample(scale_factor=2, mode='nearest'),
-		# 	nn.ReLU(True),
-		# 	nn.Conv2d(16,1,4,padding=2,stride=1),
-		# 	nn.ReLU(True)
-		# 	)
-		self.contexual_3= ContextualLayer(1,16, kernel_size=3)
-		self.contexual_5= ContextualLayer(1,16,kernel_size=5)
-		self.contexual_7=ContextualLayer(1,16,kernel_size=7)
-		self.seb= SEBlock()
-		# self.seb_3= SEBlock()
-		# self.seb_5= SEBlock()
-		# self.seb_7= SEBlock()
+		self.contexual_1= ContextualLayer(1,16)
+		# self.seb_1= SEBlock()
+		self.conv1x1= nn.Sequential(
+						nn.Conv2d(48,16,1),
+						nn.BatchNorm2d(16),
+						nn.ReLU(True),
+						nn.Conv2d(16,1,1),
+						nn.ReLU(True)
+						)
 
 
 	def forward(self,x):
@@ -167,58 +125,16 @@ class RainNet(nn.Module):
 		x_prev= x[:,0,:,:,:].clone()
 		x_now= x[:,1,:,:,:].clone()
 
-		out_prev_mae_1= self.contexual_3(x_prev)  #(bsize,1,401,401)
-		out_now_mae_1= self.contexual_3(x_now)    #(bsize,1,401,401)
+		out_prev_mae_1= self.contexual_1(x_prev)  #(bsize,1,401,401)
+		out_now_mae_1= self.contexual_1(x_now)    #(bsize,1,401,401)
+		# print(out_prev_mae_1.size())
 
+		# out_prev_se_1= self.seb_1(out_prev_mae_1)
+		# out_now_se_1= self.seb_1(out_now_mae_1)
 
-		out_prev_se_1= self.seb(out_prev_mae_1)
-		out_now_se_1= self.seb(out_now_mae_1)
+		out_prev= self.conv1x1(out_prev_mae_1)
+		out_now= self.conv1x1(out_now_mae_1)
 
-		out_prev_mae_2= self.contexual_5(x_prev)
-		out_now_mae_2= self.contexual_5(x_now)
-
-		out_prev_se_2= self.seb(out_prev_mae_2)
-		out_now_se_2= self.seb(out_now_mae_2)
-
-		out_prev_mae_3= self.contexual_7(x_prev)
-		out_now_mae_3= self.contexual_7(x_now)
-
-		out_prev_se_3= self.seb(out_prev_mae_3)
-		out_now_se_3= self.seb(out_now_mae_3)
-
-		out_prev= out_prev_se_1+ out_prev_se_2+ out_prev_se_3
-		out_now= out_now_se_1+ out_now_se_2+ out_now_se_3
-
-		# print(out_prev.size())
-		# out_prev= self.featurenet_3(out_prev)  #(bsize,1,401,401)
-		# out_now= self.featurenet_3(out_now)    #(bsize,1,401,401)
-		# print(out_prev.size())
-		# rain feature extraction
-		# mask_prev,_= self.thresholding(out_prev)
-		# mask_now,_ = self.thresholding(out_now) 
-
-		# if self.use_gpu:
-		# 	mask_prev, mask_now= mask_prev.cuda(), mask_now.cuda()
-		# # print(mask_prev.size())
-		# # concatenaet
-		# out_prev= torch.cat([out_prev, mask_prev], dim=1)   #(bsize, 2, 401,401)
-		# out_now= torch.cat([out_now, mask_now], dim=1)
-
-		# print(out_prev.size())
-
-		#downsample
-		# out_prev= self.downsample_net_2_1(out_prev)        #(bsize,1,401,401)
-		# out_now= self.downsample_net_2_1(out_now)
-
-		# out_prev_feature= self.featurenet_1(out_prev)
-		# out_now_feature= self.featurenet_1(out_now)        #(bsize,1,401,401)
-
-		#concatenate
-		# out_prev= torch.cat([out_prev, out_prev_feature], dim=1) #(bsize,2,401,401)
-		# out_now= torch.cat([out_now, out_now_feature], dim=1) #(bsize,2,401,401)
-
-		# out_prev= self.downsample_net_2_1(out_prev)
-		# out_now= self.downsample_net_2_1(out_now)
 
 		bg_prev= x_prev- out_prev
 		bg_now= x_now- out_now

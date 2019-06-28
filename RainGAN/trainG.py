@@ -11,6 +11,7 @@ from dataprep import Data_train_Gen
 import cv2
 import numpy as np
 from loss import SSIM
+# from delve import CheckLayerSat
 
 
 def train():
@@ -22,8 +23,8 @@ def train():
 			m.weight.data.fill_(0.0)
 			m.bias.data.fill_(0.0)
 
-	bsize=2
-	epoches=100
+	bsize=3
+	epoches=500
 	use_gpu=True
 	#prepare data
 	data= Data_train_Gen()
@@ -35,6 +36,10 @@ def train():
 	model= RainNet(use_gpu)
 	model.apply(init_weights)
 
+	num_params(model)
+
+	# stats = CheckLayerSat('runs', model)
+
 	criterion= SSIM()
 
 	if use_gpu:
@@ -43,8 +48,8 @@ def train():
 	#optimizer
 
 	# print(list(model.parameters()))
-	optimizer= torch.optim.Adam(model.parameters(), lr = 1e-3)
-	scheduler= MultiStepLR(optimizer, milestones=[60], gamma=0.1)
+	optimizer= torch.optim.Adam(model.parameters(), lr = 1e-3, weight_decay=0.01)
+	scheduler= MultiStepLR(optimizer, milestones=[200], gamma=0.1)
 
 	#tensorboard setup
 	writer= SummaryWriter('logs/RainNet_G')
@@ -57,6 +62,8 @@ def train():
 			print('learning rate: ', params['lr'])
 
 		for i, (input, target) in enumerate(loader_train):
+
+			# stats.saturation()
 			a= list(model.parameters())[2].clone()
 			# assert train.size()==(bsize,1,401,401),'invalid training data shape %s'%str(train.size())
 			optimizer.zero_grad()
@@ -83,7 +90,7 @@ def train():
 			loss.backward()
 			optimizer.step()
 
-			print("[%d/%d][%d/%d]            loss:%.4f/%.1f"%(epoch,epoches,i,len(data)//bsize, loss.item(),bsize*1*2))
+			print("[%d/%d][%d/%d]            loss:%.4f"%(epoch,epoches,i,len(data)//bsize, loss.item()))
 			if i%5==0:
 				writer.add_scalar('loss', loss.item(), i+1)
 
@@ -127,7 +134,12 @@ def train():
 
 	torch.save(model.state_dict(), 'logs/Generator-pretrain.pth')
 
-
+def num_params(net):
+    num_params = 0
+    for param in net.parameters():
+        num_params += param.numel()
+    # print(net)
+    print('Total number of parameters: %d' % num_params)
 
 if __name__=='__main__':
 	train()
