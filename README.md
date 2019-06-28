@@ -117,23 +117,24 @@ Some modern techniques goes here.
 We have three data sources to validate our camera accuracy, first are three radars located in the northern, eastern and western part of Singapore. Another sources are 83 rain gauges densely distributed in Singapore. To bear in mind, the nearest rain gauges is still 300 meters away, and radar averages surroundings by 700 meters by 700 meters median filter. These two biases indicate that none of the two are convincible, and no updates will be given before some in-site measurement is placed right with camera.
 
    <p align="center">
-   <img src="images/2018-04-01-ts.png" height="60%"><br>
+   <img src="images/plots-04-01-ts.png" width="60%"><br>
    Fig.6 Time Series Plot of One Event<br>
-   <img src="images/2018-04-01-cts.png" height="60%"><br>
+   <img src="images/plots-04-01-cts.png" width="60%"><br>
    Fig.7 Cumulative Time Series Plot of One Event<br>
-   <img src="images/2018-12-11-smoothed.png" height="60%"><br>
-   Fig.6 Time Series Plot of One Event<br>
-   <img src="images/2018-12-11-revisd-cumulative.png" height="60%"><br>
-   Fig.7 Cumulative Time Series Plot of One Event<br>
-   <img src="images/2018-12-12-ts.png" height="60%"><br>
-   Fig.6 Time Series Plot of One Event<br>
-   <img src="images/2018-12-12-cts.png" height="60%"><br>
-   Fig.7 Cumulative Time Series Plot of One Event<br>      
+   <img src="images/plots-12-11-smoothed.png" width="60%"><br>
+   Fig.8 Time Series Plot of One Event<br>
+   <img src="images/plots-12-11-revised-cumulative.png" width="60%"><br>
+   Fig.9 Cumulative Time Series Plot of One Event<br>
+   <img src="images/plots-12-12-ts.png" width="60%"><br>
+   Fig.10 Time Series Plot of One Event<br>
+   <img src="images/plots-12-12-cts.png" width="60%"><br>
+   Fig.11 Cumulative Time Series Plot of One Event<br>      
    </p>
    
-  <p align="center">
-  [![2018-12-08](http://img.youtube.com/vi/Di0m6gSVwZ4/0.jpg)](http://www.youtube.com/watch?v=Di0m6gSVwZ4 "")
-  </p>
+   
+[![2018-12-08](http://img.youtube.com/vi/Di0m6gSVwZ4/0.jpg)](http://www.youtube.com/watch?v=Di0m6gSVwZ4 "")
+  
+  
 ## _Reference_<a name='reference'></a>
 
 R. Dongwei, Z. Wangmeng etc. (2019) _Progressive Image Deraining Networks: A Better and Simpler Baseline_  
