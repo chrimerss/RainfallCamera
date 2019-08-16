@@ -2,7 +2,6 @@
 ---
 
 <figure>
-<img align="right" src="images/h2i_header.jpg" width="40%"/>
 <img align="center" src="images/Singapore.PNG" width="100%"/>
 </figure>
 
